@@ -31,7 +31,8 @@ UserSchema.methods.serialize = function() {
 	return {
 		username: this.username || "",
 		email: this.email || "",
-		genres: this.genres || ""
+		genres: this.genres || "",
+		movies: this.movies || ""
 	};
 };
 

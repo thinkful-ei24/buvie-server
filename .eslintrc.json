@@ -1,0 +1,70 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true,
+    "mocha": true,
+    "mongo": true,
+    "jest": true
+  },
+  "plugins": ["react"],
+  "extends": ["eslint:recommended", "plugin:react/recommended"],
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "ecmaFeatures": {
+    "arrowFunctions": true,
+    "binaryLiterals": true,
+    "blockBindings": true,
+    "classes": true,
+    "defaultParams": true,
+    "destructuring": true,
+    "forOf": true,
+    "generators": true,
+    "modules": true,
+    "objectLiteralComputedProperties": true,
+    "objectLiteralDuplicateProperties": true,
+    "objectLiteralShorthandMethods": true,
+    "objectLiteralShorthandProperties": true,
+    "octalLiterals": true,
+    "regexUFlag": true,
+    "regexYFlag": true,
+    "spread": true,
+    "superInFunctions": true,
+    "templateStrings": true,
+    "unicodeCodePointEscapes": true,
+    "globalReturn": true,
+    "jsx": true
+  },
+  "rules": {
+    "indent":["error",2,{"SwitchCase":1}],
+    "linebreak-style":["error","unix"],
+    "quotes":["error","single"],
+    "semi":["error","always"],
+    "no-console":["warn"],
+    "no-unused-vars":["warn"],
+    "strict":["off","safe"],
+    "no-eval":["error"],
+    "eqeqeq":["error"],
+    "array-bracket-spacing": ["error", "never"],
+    "object-curly-spacing": ["error", "always"],
+    "space-before-function-paren": ["error", {
+      "anonymous": "never",
+      "named": "never",
+      "asyncArrow": "always"
+    }],
+    "space-before-blocks": "error",
+    "no-var": "error",
+    "space-in-parens": ["error", "never"],
+    "no-trailing-spaces": "error",
+    "no-multiple-empty-lines": "error",
+    "keyword-spacing": "error",
+    "comma-spacing": "error",
+    "react/prop-types": "off",
+    "react/react-in-jsx-scope": "off"
+  }
+}

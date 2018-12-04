@@ -1,6 +1,7 @@
 ## Schema
 
 ### User
+
 ```
 {
   username: {
@@ -33,14 +34,12 @@
 ### Movie
 
 {
-    title: String,
-    genre: String,
-    poster: String
+title: String,
+genre: String,
+poster: String
 }
 
 ## API Overview
-
-
 
 ```text
 /api
@@ -58,6 +57,7 @@
 ```
 
 ### POST `/api/auth/login`
+
 ```js
 // req.body
 {
@@ -72,6 +72,7 @@
 ```
 
 ### POST `/api/auth/refresh`
+
 ```js
 // req.header
 Authorization: Bearer ${token}
@@ -81,7 +82,9 @@ Authorization: Bearer ${token}
   authToken: ${token}
 }
 ```
+
 ### GET `/api/users/`
+
 ```js
 // req.query
 {
@@ -99,6 +102,7 @@ Authorization: Bearer ${token}
 ```
 
 ### GET `/api/users/:id`
+
 ```js
 // req.params
 {
@@ -114,6 +118,7 @@ Authorization: Bearer ${token}
 ```
 
 ### POST `/api/users/`
+
 ```js
 // req.body
 {
@@ -126,5 +131,21 @@ Authorization: Bearer ${token}
 {
   name: String,
   username: String
+}
+```
+
+### PUT `/api/users/:id`
+
+```js
+// req.body
+{
+  genres: [String],
+  movies: [ID]
+}
+
+// res.body
+{
+   genres: [String],
+   movies: [ID]
 }
 ```

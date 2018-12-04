@@ -14,15 +14,17 @@ const UserSchema = mongoose.Schema({
     type: String,
     required: true
   },
-  firstName: {type: String, default: ''},
-  lastName: {type: String, default: ''}
+  email: {
+    type: String,
+    required: true,
+    unique: true
+  }
 });
 
 UserSchema.methods.serialize = function() {
   return {
     username: this.username || '',
-    firstName: this.firstName || '',
-    lastName: this.lastName || ''
+    email: this.email || ''
   };
 };
 
@@ -36,4 +38,4 @@ UserSchema.statics.hashPassword = function(password) {
 
 const User = mongoose.model('User', UserSchema);
 
-module.exports = {User};
+module.exports = { User };

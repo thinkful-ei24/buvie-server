@@ -1,14 +1,12 @@
-'use strict';
-const mongoose = require('mongoose');
-
-mongoose.Promise = global.Promise;
+"use strict";
+const mongoose = require("mongoose");
 
 const MovieSchema = mongoose.Schema({
-  title: String,
-  genre: String,
-  poster: String
+	title: String,
+	genre: String,
+	poster: String
 });
 
-const Movie = mongoose.model('Movie', MovieSchema);
+const Movie = mongoose.model("Movie", MovieSchema);
 
 module.exports = { Movie };

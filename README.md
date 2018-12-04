@@ -139,8 +139,7 @@ Authorization: Bearer ${token}
 ```js
 // req.body
 {
-  genres: [String],
-  movies: [ID]
+  genres: [String]
 }
 
 // res.body

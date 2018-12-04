@@ -24,7 +24,6 @@ const UserSchema = mongoose.Schema({
 			type: String
 		}
 	],
-	// ],
 	movies: [{ type: mongoose.Schema.Types.ObjectId, ref: "Movie" }]
 });
 

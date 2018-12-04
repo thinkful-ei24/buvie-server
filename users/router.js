@@ -159,14 +159,35 @@ router.get("/:id", (req, res) => {
 		})
 	);
 });
+console.log(requiredFieldsInReqBody);
 
 router.put("/:id", (req, res, next) => {
 	let { id } = req.params;
 	if (req.user.id !== id) {
-		let err = new Error("Hold up sir");
-		err.status(400);
+		let err = new Error("Hold up sir that is not your id");
+		err.status(401);
 		next(err);
 	}
+
+	let { genres, movies } = req.body;
+
+	if (genres) {
+		User.findOneAndUpdate({ _id: id }, { genres: genres }, { new: true })
+			.then(user => res.json(user))
+			.catch(err => {
+				next(err);
+			});
+	}
+
+	if (movies) {
+		User.findByIdAndUpdate({ _id: id }, { movies: movies }, { new: true })
+			.then(user => res.json(user))
+			.catch(err => {
+				next(err);
+			});
+	}
+
+	return next();
 });
 
 module.exports = { router };

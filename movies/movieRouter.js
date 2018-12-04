@@ -11,7 +11,7 @@ const jsonParser = bodyParser.json();
 // POST genres to get back movie list
 router.post('/', jsonParser, (req, res) => {
   const {genres} = req.body;
-  return Movie.find({})
+  return Movie.find({genre: {$in: genres}})
   .then(movies => res.json(movies))
   .catch(err => res.status(500).json({message: 'Internal server error'}))
 })

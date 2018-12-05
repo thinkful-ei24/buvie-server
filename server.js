@@ -41,6 +41,7 @@ passport.use(jwtStrategy);
 
 app.use('/api/users/', usersRouter);
 app.use('/api/auth/', authRouter);
+app.use('/api/movies/', passport.authenticate('jwt', { session: false, failWithError: true }));
 app.use('/api/movies/', moviesRouter);
 
 const jwtAuth = passport.authenticate('jwt', { session: false });
@@ -54,6 +55,17 @@ app.get('/api/protected', jwtAuth, (req, res) => {
 
 app.use('*', (req, res) => {
   return res.status(404).json({ message: 'Not Found' });
+});
+
+//Custom error handler
+app.use((err, req, res, next) => {
+  if(err.status) {
+    const errBody = Object.assign({}, err, { message: err.message });
+    res.status(err.status).json(errBody);
+  } else {
+    console.log(err);
+    res.status(500).json({ message: 'internal server error' });
+  }
 });
 
 // Referenced by both runServer and closeServer. closeServer

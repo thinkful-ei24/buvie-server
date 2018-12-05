@@ -15,7 +15,7 @@ const passport = require("passport");
 const { router: usersRouter } = require("./users");
 const { router: authRouter, localStrategy, jwtStrategy } = require("./auth");
 const { router: moviesRouter } = require("./movies");
-const { router: genresRouter } = require("./users/genres");
+const { router: genresRouter } = require("./main/genres");
 
 mongoose.Promise = global.Promise;
 
@@ -44,8 +44,8 @@ passport.use(jwtStrategy);
 
 //MOUNT ROUTERS
 
-app.use("/api/users/genres", jwtAuth);
-app.use("/api/users/genres", genresRouter);
+app.use("/api/main", jwtAuth);
+app.use("/api/main", genresRouter);
 app.use("/api/users/", usersRouter);
 
 app.use("/api/auth/", authRouter);

@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 const express = require("express");
 const router = express.Router();
-const { User } = require("./index");
-const { Movie } = require('../movies');
+const { User } = require("../users");
+const { Movie } = require("../movies");
 const bodyParser = require("body-parser");
 const jsonParser = bodyParser.json();
 
@@ -24,11 +24,23 @@ router.put("/:id", jsonParser, (req, res, next) => {
 				return next(err);
 			});
 	} else if (movies) {
+		const moviePromises = movies =>
+			movies.forEach(movie =>
+				Movie.updateMany(
+					{ $in: { _id: movies } },
+					{ $push: { users: id } },
+					{ new: true }
+				)
+			);
 
-		const moviePromises = (movies) => movies.forEach(movie => Movie.updateMany({ $in: {_id: movies }}, { $push: { users: id } }, {new: true}));
-		
 		User.findByIdAndUpdate({ _id: id }, { movies: movies }, { new: true })
-			.then(() => Movie.updateMany({ _id: {$in: movies }}, { $push: { users: id } }, {new: true}))
+			.then(() =>
+				Movie.updateMany(
+					{ _id: { $in: movies } },
+					{ $push: { users: id } },
+					{ new: true }
+				)
+			)
 			.then(() => res.sendStatus(204))
 			.catch(err => {
 				return next(err);
@@ -36,7 +48,13 @@ router.put("/:id", jsonParser, (req, res, next) => {
 	} else {
 		return next();
 	}
+});
 
+router.get("/", (req, res, next) => {
+	const { id } = req.user;
+	User.findById(id).then(user => {
+		console.log(user);
+	});
 });
 
 module.exports = { router };

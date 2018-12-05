@@ -24,14 +24,6 @@ router.put("/:id", jsonParser, (req, res, next) => {
 				return next(err);
 			});
 	} else if (movies) {
-		const moviePromises = movies =>
-			movies.forEach(movie =>
-				Movie.updateMany(
-					{ $in: { _id: movies } },
-					{ $push: { users: id } },
-					{ new: true }
-				)
-			);
 
 		User.findByIdAndUpdate({ _id: id }, { movies: movies }, { new: true })
 			.then(() =>
@@ -41,7 +33,7 @@ router.put("/:id", jsonParser, (req, res, next) => {
 					{ new: true }
 				)
 			)
-			.then(() => res.sendStatus(204))
+			.then((user) => res.json(user.serialize()))
 			.catch(err => {
 				return next(err);
 			});

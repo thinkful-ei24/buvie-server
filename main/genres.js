@@ -33,7 +33,7 @@ router.put("/:id", jsonParser, (req, res, next) => {
 					{ new: true }
 				)
 			)
-			.then((user) => res.json(user.serialize()))
+			.then((user) => res.json(user))
 			.catch(err => {
 				return next(err);
 			});

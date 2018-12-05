@@ -8,6 +8,7 @@ const jsonParser = bodyParser.json();
 
 router.put("/:id", jsonParser, (req, res, next) => {
 	let { id } = req.params;
+	let updatedUser;
 
 	if (req.user.id !== id) {
 		let err = new Error("Hold up sir that is not your id");
@@ -26,14 +27,15 @@ router.put("/:id", jsonParser, (req, res, next) => {
 	} else if (movies) {
 
 		User.findByIdAndUpdate({ _id: id }, { movies: movies }, { new: true })
-			.then(() =>
-				Movie.updateMany(
+			.then((user) => {
+				updatedUser = user;
+				return Movie.updateMany(
 					{ _id: { $in: movies } },
 					{ $push: { users: id } },
 					{ new: true }
-				)
+				)}
 			)
-			.then((user) => res.json(user))
+			.then(() => res.json(updatedUser))
 			.catch(err => {
 				return next(err);
 			});

@@ -20,7 +20,7 @@ router.put("/:id", jsonParser, (req, res, next) => {
 
 	if (genres) {
 		User.findOneAndUpdate({ _id: id }, { genres: genres }, { new: true })
-			.then(user => res.json(user))
+			.then(user => res.json(user.serialize()))
 			.catch(err => {
 				return next(err);
 			});
@@ -28,7 +28,7 @@ router.put("/:id", jsonParser, (req, res, next) => {
 
 		User.findByIdAndUpdate({ _id: id }, { movies: movies }, { new: true })
 			.then((user) => {
-				updatedUser = user;
+				updatedUser = user.serialize();
 				return Movie.updateMany(
 					{ _id: { $in: movies } },
 					{ $push: { users: id } },

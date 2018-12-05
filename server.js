@@ -1,9 +1,9 @@
-'use strict';
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const morgan = require('morgan');
-const passport = require('passport');
+"use strict";
+require("dotenv").config();
+const express = require("express");
+const mongoose = require("mongoose");
+const morgan = require("morgan");
+const passport = require("passport");
 
 // Here we use destructuring assignment with renaming so the two variables
 // called router (from ./users and ./auth) have different names
@@ -12,60 +12,67 @@ const passport = require('passport');
 // const { james: jimmy, robert: bobby } = actorSurnames;
 // console.log(jimmy); // Stewart - the variable name is jimmy, not james
 // console.log(bobby); // De Niro - the variable name is bobby, not robert
-const { router: usersRouter } = require('./users');
-const { router: authRouter, localStrategy, jwtStrategy } = require('./auth');
-const { router: moviesRouter } = require('./movies');
+const { router: usersRouter } = require("./users");
+const { router: authRouter, localStrategy, jwtStrategy } = require("./auth");
+const { router: moviesRouter } = require("./movies");
+const { router: genresRouter } = require("./users/genres");
 
 mongoose.Promise = global.Promise;
 
-const { PORT, DATABASE_URL } = require('./config');
+const { PORT, DATABASE_URL } = require("./config");
 
 const app = express();
 
+const jwtAuth = passport.authenticate("jwt", { session: false });
+
 // Logging
-app.use(morgan('common'));
+app.use(morgan("common"));
 
 // CORS
-app.use(function (req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE');
-  if (req.method === 'OPTIONS') {
-    return res.send(204);
-  }
-  next();
+app.use(function(req, res, next) {
+	res.header("Access-Control-Allow-Origin", "*");
+	res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
+	res.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE");
+	if (req.method === "OPTIONS") {
+		return res.send(204);
+	}
+	next();
 });
 
 passport.use(localStrategy);
 passport.use(jwtStrategy);
 
-app.use('/api/users/', usersRouter);
-app.use('/api/auth/', authRouter);
-app.use('/api/movies/', passport.authenticate('jwt', { session: false, failWithError: true }));
-app.use('/api/movies/', moviesRouter);
+//MOUNT ROUTERS
 
-const jwtAuth = passport.authenticate('jwt', { session: false });
+app.use("/api/users/", usersRouter);
+app.use("/api/users/genres", jwtAuth);
+app.use("/api/users/genres", genresRouter);
+
+app.use("/api/auth/", authRouter);
+app.use("/api/movies/", jwtAuth);
+
+app.use("/api/movies/", moviesRouter);
 
 // A protected endpoint which needs a valid JWT to access it
-app.get('/api/protected', jwtAuth, (req, res) => {
-  return res.json({
-    data: 'rosebud'
-  });
+app.get("/api/protected", jwtAuth, (req, res) => {
+	return res.json({
+		data: "rosebud"
+	});
 });
 
-app.use('*', (req, res) => {
-  return res.status(404).json({ message: 'Not Found' });
+app.use("*", (req, res) => {
+	return res.status(404).json({ message: "Not Found" });
 });
 
 //Custom error handler
 app.use((err, req, res, next) => {
-  if(err.status) {
-    const errBody = Object.assign({}, err, { message: err.message });
-    res.status(err.status).json(errBody);
-  } else {
-    console.log(err);
-    res.status(500).json({ message: 'internal server error' });
-  }
+	if (err.status) {
+		const errBody = Object.assign({}, err, { message: err.message });
+		res.status(err.status).json(errBody);
+	} else {
+		console.log(err);
+		res.status(500).json({ message: "internal server error" });
+	}
 });
 
 // Referenced by both runServer and closeServer. closeServer
@@ -73,40 +80,43 @@ app.use((err, req, res, next) => {
 let server;
 
 function runServer(databaseUrl, port = PORT) {
-
-  return new Promise((resolve, reject) => {
-    mongoose.connect(databaseUrl, err => {
-      if (err) {
-        return reject(err);
-      }
-      server = app.listen(port, () => {
-        console.log(`Your app is listening on port ${port}`);
-        resolve();
-      })
-        .on('error', err => {
-          mongoose.disconnect();
-          reject(err);
-        });
-    });
-  });
+	return new Promise((resolve, reject) => {
+		mongoose.connect(
+			databaseUrl,
+			err => {
+				if (err) {
+					return reject(err);
+				}
+				server = app
+					.listen(port, () => {
+						console.log(`Your app is listening on port ${port}`);
+						resolve();
+					})
+					.on("error", err => {
+						mongoose.disconnect();
+						reject(err);
+					});
+			}
+		);
+	});
 }
 
 function closeServer() {
-  return mongoose.disconnect().then(() => {
-    return new Promise((resolve, reject) => {
-      console.log('Closing server');
-      server.close(err => {
-        if (err) {
-          return reject(err);
-        }
-        resolve();
-      });
-    });
-  });
+	return mongoose.disconnect().then(() => {
+		return new Promise((resolve, reject) => {
+			console.log("Closing server");
+			server.close(err => {
+				if (err) {
+					return reject(err);
+				}
+				resolve();
+			});
+		});
+	});
 }
 
 if (require.main === module) {
-  runServer(DATABASE_URL).catch(err => console.error(err));
+	runServer(DATABASE_URL).catch(err => console.error(err));
 }
 
 module.exports = { app, runServer, closeServer };

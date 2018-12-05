@@ -44,9 +44,9 @@ passport.use(jwtStrategy);
 
 //MOUNT ROUTERS
 
-app.use("/api/users/", usersRouter);
 app.use("/api/users/genres", jwtAuth);
 app.use("/api/users/genres", genresRouter);
+app.use("/api/users/", usersRouter);
 
 app.use("/api/auth/", authRouter);
 app.use("/api/movies/", jwtAuth);

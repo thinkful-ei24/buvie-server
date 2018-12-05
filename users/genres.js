@@ -30,9 +30,10 @@ router.put("/:id", jsonParser, (req, res, next) => {
 			.catch(err => {
 				return next(err);
 			});
+	}else{
+		return next();
 	}
 
-	return next();
 });
 
 module.exports = { router };

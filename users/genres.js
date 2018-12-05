@@ -8,14 +8,12 @@ const jsonParser = bodyParser.json();
 router.put("/:id", jsonParser, (req, res, next) => {
 	let { id } = req.params;
 
-	console.log(id, "line 9", req.user.id.toString());
 	if (req.user.id !== id) {
 		let err = new Error("Hold up sir that is not your id");
 		err.status = 401;
 		next(err);
 	}
 
-	console.log(req.body, "line 16");
 	let { genres, movies } = req.body;
 
 	if (genres) {

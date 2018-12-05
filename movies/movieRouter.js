@@ -12,13 +12,13 @@ const jsonParser = bodyParser.json();
 // POST genres to get back movie list
 router.get("/", jsonParser, (req, res, next) => {
 	const { id } = req.user;
-	return User.findOne({ _id: id })
+	User.findOne({ _id: id })
 		.then(user => {
 			const { genres } = user;
 			return Movie.find({ genre: { $in: genres } })
 		})
-	.then(movies => res.json(movies))
-	.catch(err => next(err));
+		.then(movies => res.json(movies))
+		.catch(err => next(err));
 });
 
 module.exports = { router };

@@ -17,7 +17,7 @@ router.get("/", jsonParser, (req, res, next) => {
 			const { genres } = user;
 			return Movie.find({ genre: { $in: genres } })
 		})
-		.then(movies => res.json(movies))
+		.then(movies => res.json(movies.map(movie => movie.serialize())))
 		.catch(err => next(err));
 });
 

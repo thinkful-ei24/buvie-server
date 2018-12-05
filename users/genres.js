@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const express = require("express");
 const router = express.Router();
-const { User } = require("../users/models");
+const { User } = require("./index");
+const { Movie } = require('../movies');
 const bodyParser = require("body-parser");
 const jsonParser = bodyParser.json();
 
@@ -23,12 +24,16 @@ router.put("/:id", jsonParser, (req, res, next) => {
 				return next(err);
 			});
 	} else if (movies) {
+
+		const moviePromises = (movies) => movies.forEach(movie => Movie.updateMany({ $in: {_id: movies }}, { $push: { users: id } }, {new: true}));
+		
 		User.findByIdAndUpdate({ _id: id }, { movies: movies }, { new: true })
-			.then(user => res.json(user))
+			.then(() => Movie.updateMany({ _id: {$in: movies }}, { $push: { users: id } }, {new: true}))
+			.then(() => res.sendStatus(204))
 			.catch(err => {
 				return next(err);
 			});
-	}else{
+	} else {
 		return next();
 	}
 

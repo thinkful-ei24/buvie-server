@@ -27,7 +27,7 @@ const UserSchema = mongoose.Schema({
 	movies: [{ type: mongoose.Schema.Types.ObjectId, ref: "Movie" }],
 	popcorned: [{type: mongoose.Schema.Types.ObjectId, ref: "User"}],
 	matched: [{
-		userId: mongoose.Schema.Types.ObjectId,
+		_id: mongoose.Schema.Types.ObjectId,
 		chatroom: String
 	}]
 });

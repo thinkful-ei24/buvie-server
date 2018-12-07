@@ -100,19 +100,18 @@ router.get("/", (req, res, next) => {
 	let ourMatches = [];
 
 	let movies;
-	let proportion;
+	let sortingMatchedPeopleArr;
 
 	const { id } = req.user;
 	User.findById(id)
 		.then(user => {
 			movies = user.movies;
-			proportion = Math.ceil(movies.length * 0.55);
+			// proportion = Math.ceil(movies.length * 0.55);
 			return Movie.find({ _id: { $in: movies } }, { _id: 0, users: 1 });
 		})
 		.then(movies => {
 			for (let i = 0; i < movies.length; i++) {
 				for (let j = 0; j < movies[i].users.length; j++) {
-					console.log(movies[i].users[j]);
 					if (!userIdDictionary[movies[i].users[j]]) {
 						userIdDictionary[movies[i].users[j]] = 1;
 					} else {
@@ -120,14 +119,20 @@ router.get("/", (req, res, next) => {
 					}
 				}
 			}
-			console.log(userIdDictionary, "line 84");
-			console.log(proportion, "line 85");
+
 			for (let id in userIdDictionary) {
-				if (userIdDictionary[id] >= proportion && id !== req.user.id) {
-					ourMatches.push(id);
+				if (id !== req.user.id) {
+					ourMatches.push({ id, count: userIdDictionary[id] });
 				}
 			}
-			return User.find({ _id: { $in: ourMatches } }).populate({
+
+			let sortedObj = ourMatches.sort((user1, user2) => {
+				return user2.count - user1.count;
+			});
+
+			let sortedIds = sortedObj.map(obj => obj.id);
+
+			return User.find({ _id: { $in: sortedIds } }).populate({
 				path: "movies",
 				select: "title poster"
 			});

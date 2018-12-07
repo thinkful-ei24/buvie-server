@@ -15,40 +15,45 @@ router.put("/popcorn", jsonParser, (req, res, next) => {
 	let _user;
 	//5c0996bc2025921aeac5020b
 	// look up the user who popcorned and check if the user they popcorned has already popcorned them
-	User.findOne({ _id: popcornerId })
-		.then(user => {
-			_user = user;
-			if (user.popcorned.find(id => id.toString() === popcornedId)) {
-				Conversation.create({ matched: [popcornedId, popcornerId] }).then(
-					conversation => {
-						let chatroom = conversation._id;
+	User.findOne({ _id: popcornerId }).then(user => {
+		_user = user;
 
-						_user.popcorned = _user.popcorned.filter(
-							userId => userId.toString() !== popcornedId
-						);
-						_user.matched.push({ _id: popcornedId, chatroom });
-						return Promise.all([
-							User.findOneAndUpdate(
-								{ _id: popcornerId },
-								{ popcorned: _user.popcorned, matched: _user.matched }
-							),
-							User.findOneAndUpdate(
-								{ _id: popcornedId },
-								{ $push: { matched: { _id: popcornerId, chatroom } } }
-							)
-						]);
-					}
-				);
-			} else {
-				return User.findOneAndUpdate(
-					{ _id: popcornedId },
-					{ $push: { popcorned: popcornerId } },
-					{ new: true }
-				);
-			}
-		})
-		.then(() => res.sendStatus(204))
-		.catch(err => next(err));
+		return User.findOne({ _id: popcornedId })
+			.then(user => {
+				if (user.popcorned.find(id => id.toString() === popcornerId)) {
+					return;
+				} else if (_user.popcorned.find(id => id.toString() === popcornedId)) {
+					Conversation.create({ matched: [popcornedId, popcornerId] }).then(
+						conversation => {
+							let chatroom = conversation._id;
+
+							_user.popcorned = _user.popcorned.filter(
+								userId => userId.toString() !== popcornedId
+							);
+							_user.matched.push({ _id: popcornedId, chatroom });
+							return Promise.all([
+								User.findOneAndUpdate(
+									{ _id: popcornerId },
+									{ popcorned: _user.popcorned, matched: _user.matched }
+								),
+								User.findOneAndUpdate(
+									{ _id: popcornedId },
+									{ $push: { matched: { _id: popcornerId, chatroom } } }
+								)
+							]);
+						}
+					);
+				} else {
+					return User.findOneAndUpdate(
+						{ _id: popcornedId },
+						{ $push: { popcorned: popcornerId } },
+						{ new: true }
+					);
+				}
+			})
+			.then(() => res.sendStatus(204))
+			.catch(err => next(err));
+	});
 });
 
 router.put("/:id", jsonParser, (req, res, next) => {
@@ -182,7 +187,7 @@ router.get("/matches/:id", (req, res, next) => {
 
 	User.findOne({ _id: id }, { matches: 1 })
 		// .populate({ path: "matched._id", select: "username" })
-		.populate({path: 'matched._id', select: 'username'})
+		.populate({ path: "matched._id", select: "username" })
 		.then(matches => {
 			res.status(200).json(matches);
 		})

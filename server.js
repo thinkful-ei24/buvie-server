@@ -122,10 +122,14 @@ if (require.main === module) {
       const io = socket(server);
       io.on('connection', (socket) => {
         console.log('made connection', socket.id);
+        socket.on('subscribe', room => {
+          console.log('joining ', room);
+          socket.join(room);
+        });
 
         socket.on('chat', data => {
-          console.log(data);
-          io.sockets.emit('chat', data);
+          console.log(data, 'to ', data.room);
+          io.sockets.in(data.room).emit('chat', data);
         });
       });
     }

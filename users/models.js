@@ -24,7 +24,12 @@ const UserSchema = mongoose.Schema({
 			type: String
 		}
 	],
-	movies: [{ type: mongoose.Schema.Types.ObjectId, ref: "Movie" }]
+	movies: [{ type: mongoose.Schema.Types.ObjectId, ref: "Movie" }],
+	popcorned: [{type: mongoose.Schema.Types.ObjectId, ref: "User"}],
+	matched: [{
+		_id: mongoose.Schema.Types.ObjectId,
+		chatroom: String
+	}]
 });
 
 UserSchema.methods.serialize = function() {
@@ -33,7 +38,9 @@ UserSchema.methods.serialize = function() {
 		username: this.username || "",
 		email: this.email || "",
 		genres: this.genres || "",
-		movies: this.movies || ""
+		movies: this.movies || "",
+		popcorned: this.popcorned || [],
+		matched: this.matched || []
 	};
 };
 

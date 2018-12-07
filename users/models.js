@@ -28,8 +28,8 @@ const UserSchema = mongoose.Schema({
 	popcorned: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 	matched: [
 		{
-			_id: mongoose.Schema.Types.ObjectId,
-			chatroom: { type: mongoose.Schema.Types.ObjectId }
+			_id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+			chatroom: { type: mongoose.Schema.Types.ObjectId, ref: "Conversation" }
 		}
 	]
 });

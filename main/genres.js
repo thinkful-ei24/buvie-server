@@ -3,34 +3,53 @@ const express = require("express");
 const router = express.Router();
 const { User } = require("../users");
 const { Movie } = require("../movies");
+const { Conversation } = require("../conversation/models");
 const bodyParser = require("body-parser");
 const jsonParser = bodyParser.json();
-const uniqid = require('uniqid');
+const uniqid = require("uniqid");
+const socket = require("socket.io");
 
-router.put('/popcorn', jsonParser, (req, res, next) => {
+router.put("/popcorn", jsonParser, (req, res, next) => {
 	const popcornerId = req.user.id;
 	const popcornedId = req.body.userId;
-
+	let _user;
 	//5c0996bc2025921aeac5020b
 	// look up the user who popcorned and check if the user they popcorned has already popcorned them
-	User.findOne({_id: popcornerId})
+	User.findOne({ _id: popcornerId })
 		.then(user => {
-			if(user.popcorned.find(id => id.toString()===popcornedId)){
-				const chatroom = uniqid();
-				user.popcorned = user.popcorned.filter(userId => userId.toString() !== popcornedId);
-				user.matched.push({_id: popcornedId, chatroom});
-				return Promise.all([
-					User.findOneAndUpdate({_id: popcornerId}, {popcorned: user.popcorned, matched: user.matched}),
-					User.findOneAndUpdate({_id: popcornedId}, {$push: {matched: {_id: popcornerId, chatroom}}})
-				]);
-			}
-			else{
-				return User.findOneAndUpdate({_id: popcornedId}, {$push: {popcorned: popcornerId}}, {new: true});
+			_user = user;
+			if (user.popcorned.find(id => id.toString() === popcornedId)) {
+				Conversation.create({ matched: [popcornedId, popcornerId] }).then(
+					conversation => {
+						let chatroom = conversation._id;
+
+						_user.popcorned = _user.popcorned.filter(
+							userId => userId.toString() !== popcornedId
+						);
+						_user.matched.push({ _id: popcornedId, chatroom });
+						return Promise.all([
+							User.findOneAndUpdate(
+								{ _id: popcornerId },
+								{ popcorned: _user.popcorned, matched: _user.matched }
+							),
+							User.findOneAndUpdate(
+								{ _id: popcornedId },
+								{ $push: { matched: { _id: popcornerId, chatroom } } }
+							)
+						]);
+					}
+				);
+			} else {
+				return User.findOneAndUpdate(
+					{ _id: popcornedId },
+					{ $push: { popcorned: popcornerId } },
+					{ new: true }
+				);
 			}
 		})
 		.then(() => res.sendStatus(204))
 		.catch(err => next(err));
-})
+});
 
 router.put("/:id", jsonParser, (req, res, next) => {
 	let { id } = req.params;
@@ -51,16 +70,15 @@ router.put("/:id", jsonParser, (req, res, next) => {
 				return next(err);
 			});
 	} else if (movies) {
-
 		User.findByIdAndUpdate({ _id: id }, { movies: movies }, { new: true })
-			.then((user) => {
+			.then(user => {
 				updatedUser = user.serialize();
 				return Movie.updateMany(
 					{ _id: { $in: movies } },
 					{ $push: { users: id } },
 					{ new: true }
-				)}
-			)
+				);
+			})
 			.then(() => res.json(updatedUser))
 			.catch(err => {
 				return next(err);
@@ -127,18 +145,42 @@ router.get("/", (req, res, next) => {
 
 // Just returns a user's popcorns
 
-router.get('/popcorn', (req, res, next) => {
-	const {id} = req.user;
-	User.findOne({_id: id}).populate({
-		path: 'popcorned',
-		select: 'username'
-	})
+router.get("/popcorn/:id", (req, res, next) => {
+	const { id } = req.params;
+
+	if (req.user.id !== id) {
+		let err = new Error("Hold up sir that is not your id");
+		err.status = 401;
+		return next(err);
+	}
+
+	User.findOne({ _id: id })
+		.populate({
+			path: "popcorned",
+			select: "username"
+		})
 		.then(user => {
-			const {popcorned} = user;
+			const { popcorned } = user;
 			res.json(popcorned);
 		})
 		.catch(err => next(err));
-})
+});
 
+router.get("/matches/:id", (req, res, next) => {
+	let { id } = req.params;
+
+	if (req.user.id !== id) {
+		let err = new Error("Hold up sir that is not your id");
+		err.status = 401;
+		return next(err);
+	}
+
+	User.findOne({ _id: id }, { matches: 1 })
+		.populate({ path: "matched", select: "username" })
+		.then(matches => {
+			res.status(200).json(matches);
+		})
+		.catch(err => next(err));
+});
 
 module.exports = { router };

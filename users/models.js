@@ -25,11 +25,13 @@ const UserSchema = mongoose.Schema({
 		}
 	],
 	movies: [{ type: mongoose.Schema.Types.ObjectId, ref: "Movie" }],
-	popcorned: [{type: mongoose.Schema.Types.ObjectId, ref: "User"}],
-	matched: [{
-		_id: mongoose.Schema.Types.ObjectId,
-		chatroom: String
-	}]
+	popcorned: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+	matched: [
+		{
+			_id: mongoose.Schema.Types.ObjectId,
+			chatroom: { type: mongoose.Schema.Types.ObjectId }
+		}
+	]
 });
 
 UserSchema.methods.serialize = function() {

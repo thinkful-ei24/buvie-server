@@ -188,6 +188,8 @@ router.get("/matches/:id", (req, res, next) => {
 	User.findOne({ _id: id }, { matches: 1 })
 		// .populate({ path: "matched._id", select: "username" })
 		.populate({ path: "matched._id", select: "username" })
+		.populate({ path: "matched.chatroom", select: "_id" })
+
 		.then(matches => {
 			res.status(200).json(matches);
 		})

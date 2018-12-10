@@ -153,7 +153,6 @@ router.get("/", (req, res, next) => {
 
 			for (let id in userIdDictionary) {
 				if (id !== req.user.id
-					&& !_user.popcorned.find(userId => userId.toString() === id)
 					&& !_user.matched.find(userId => userId._id._id.toString() === id)
 					&& !_user.ignored.find(userId => userId.toString() === id)
 					&& !_user.whoUserPopcorned.find(userId => userId.toString() === id)) {

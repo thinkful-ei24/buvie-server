@@ -125,6 +125,7 @@ router.get("/", (req, res, next) => {
 	let movies;
 	let sortingMatchedPeopleArr;
 	let _user;
+	let sortedIds;
 	const { id } = req.user;
 	User.findById(id)
 		.populate({ path: "matched._id", select: "username" })
@@ -158,11 +159,11 @@ router.get("/", (req, res, next) => {
 				return user2.count - user1.count;
 			});
 
-			let sortedIds = sortedObj.map(obj => obj.id);
+			sortedIds = sortedObj.map(obj => obj.id);
 			for (let i=0; i<_user.ignored.length; i++){
-				sortedIds.push(_user.ignored[i]);
+				sortedIds.push(_user.ignored[i].toString());
 			}
-
+			console.log(sortedIds);
 			return User.find({ _id: { $in: sortedIds } }).populate({
 				path: "movies",
 				select: "title poster"
@@ -171,7 +172,12 @@ router.get("/", (req, res, next) => {
 		})
 		.then(users => {
 			let serializedUser = users.map(user => user.serialize());
-			res.json(serializedUser);
+			let response = [];
+			for(let i=0; i< sortedIds.length; i++){
+				let currentUser = serializedUser.find(user => user.id.toString()===sortedIds[i]);
+				response.push(currentUser);
+			}
+			res.json(response);
 		})
 		.catch(err => {
 			next(err);

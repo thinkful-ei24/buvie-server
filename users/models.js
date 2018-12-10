@@ -32,7 +32,8 @@ const UserSchema = mongoose.Schema({
 			chatroom: { type: mongoose.Schema.Types.ObjectId, ref: "Conversation" }
 		}
 	],
-	ignored: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
+	ignored: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+	whoUserPopcorned: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
 });
 
 UserSchema.methods.serialize = function() {

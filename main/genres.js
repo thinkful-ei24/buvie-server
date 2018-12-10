@@ -45,11 +45,16 @@ router.put("/popcorn", jsonParser, (req, res, next) => {
 						}
 					);
 				} else {
-					return User.findOneAndUpdate(
-						{ _id: popcornedId },
-						{ $push: { popcorned: popcornerId } },
-						{ new: true }
-					);
+					return Promise.all([
+						User.findOneAndUpdate(
+							{ _id: popcornedId },
+							{ $push: { popcorned: popcornerId } },
+							{ new: true }),
+						User.findOneAndUpdate(
+							{ _id: popcornerId },
+							{ $push: { whoUserPopcorned: popcornedId } },
+							{ new: true })
+					])
 				}
 			})
 			.then(() => res.sendStatus(204))
@@ -60,14 +65,14 @@ router.put("/popcorn", jsonParser, (req, res, next) => {
 router.put("/ignore/:id", jsonParser, (req, res, next) => {
 	const id = req.user.id;
 	const ignored = req.body.userId;
-	User.findOne({_id: id})
+	User.findOne({ _id: id })
 		.then((user) => {
-			if(user.ignored.find(userId => userId.toString() === ignored)){
+			if (user.ignored.find(userId => userId.toString() === ignored)) {
 				user.ignored = user.ignored.filter(userId => userId.toString() !== ignored);
 				user.ignored.push(ignored);
-				return User.findOneAndUpdate({_id: id}, {ignored: user.ignored}, {new: true});
-			}else {
-				return 	User.findOneAndUpdate({ _id: id }, { $push: { ignored: ignored } }, { new: true });
+				return User.findOneAndUpdate({ _id: id }, { ignored: user.ignored }, { new: true });
+			} else {
+				return User.findOneAndUpdate({ _id: id }, { $push: { ignored: ignored } }, { new: true });
 			}
 		})
 		.then(() => res.sendStatus(204))
@@ -150,7 +155,8 @@ router.get("/", (req, res, next) => {
 				if (id !== req.user.id
 					&& !_user.popcorned.find(userId => userId.toString() === id)
 					&& !_user.matched.find(userId => userId._id._id.toString() === id)
-					&& !_user.ignored.find(userId => userId.toString() === id)) {
+					&& !_user.ignored.find(userId => userId.toString() === id)
+					&& !_user.whoUserPopcorned.find(userId => userId.toString() === id)) {
 					ourMatches.push({ id, count: userIdDictionary[id] });
 				}
 			}
@@ -160,7 +166,7 @@ router.get("/", (req, res, next) => {
 			});
 
 			sortedIds = sortedObj.map(obj => obj.id);
-			for (let i=0; i<_user.ignored.length; i++){
+			for (let i = 0; i < _user.ignored.length; i++) {
 				sortedIds.push(_user.ignored[i].toString());
 			}
 			console.log(sortedIds);
@@ -173,8 +179,8 @@ router.get("/", (req, res, next) => {
 		.then(users => {
 			let serializedUser = users.map(user => user.serialize());
 			let response = [];
-			for(let i=0; i< sortedIds.length; i++){
-				let currentUser = serializedUser.find(user => user.id.toString()===sortedIds[i]);
+			for (let i = 0; i < sortedIds.length; i++) {
+				let currentUser = serializedUser.find(user => user.id.toString() === sortedIds[i]);
 				response.push(currentUser);
 			}
 			res.json(response);

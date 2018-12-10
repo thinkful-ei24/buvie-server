@@ -13,7 +13,7 @@ router.put("/popcorn", jsonParser, (req, res, next) => {
 	const popcornerId = req.user.id;
 	const popcornedId = req.body.userId;
 	let _user;
-	//5c0996bc2025921aeac5020b
+
 	// look up the user who popcorned and check if the user they popcorned has already popcorned them
 	User.findOne({ _id: popcornerId }).then(user => {
 		_user = user;
@@ -21,7 +21,7 @@ router.put("/popcorn", jsonParser, (req, res, next) => {
 		return User.findOne({ _id: popcornedId })
 			.populate({ path: "matched._id", select: "username" })
 			.then(user => {
-				if (user.popcorned.find(id => id.toString() === popcornerId)||user.matched.find(id =>id._id._id.toString() === popcornerId)) {
+				if (user.popcorned.find(id => id.toString() === popcornerId) || user.matched.find(id => id._id._id.toString() === popcornerId)) {
 					return;
 				} else if (_user.popcorned.find(id => id.toString() === popcornedId)) {
 					Conversation.create({ matched: [popcornedId, popcornerId] }).then(
@@ -56,6 +56,15 @@ router.put("/popcorn", jsonParser, (req, res, next) => {
 			.catch(err => next(err));
 	});
 });
+
+router.put("/ignore/:id", jsonParser, (req, res, next) => {
+	const id = req.user.id;
+	const ignored = req.body.userId;
+
+	User.findOneAndUpdate({ _id: id }, { $push: { ignored: ignored } }, { new: true })
+		.then(() => res.sendStatus(204))
+		.catch(err => next(err));
+})
 
 router.put("/:id", jsonParser, (req, res, next) => {
 	let { id } = req.params;
@@ -107,10 +116,12 @@ router.get("/", (req, res, next) => {
 
 	let movies;
 	let sortingMatchedPeopleArr;
-
+	let _user;
 	const { id } = req.user;
 	User.findById(id)
+		.populate({ path: "matched._id", select: "username" })
 		.then(user => {
+			_user = user;
 			movies = user.movies;
 			// proportion = Math.ceil(movies.length * 0.55);
 			return Movie.find({ _id: { $in: movies } }, { _id: 0, users: 1 });
@@ -127,7 +138,10 @@ router.get("/", (req, res, next) => {
 			}
 
 			for (let id in userIdDictionary) {
-				if (id !== req.user.id) {
+				if (id !== req.user.id
+					&& !_user.popcorned.find(userId => userId.toString() === id)
+					&& !_user.matched.find(id => id._id._id.toString() === popcornerId)
+					&& !_user.ignored.find(userId => userId.toString() === id)) {
 					ourMatches.push({ id, count: userIdDictionary[id] });
 				}
 			}
@@ -137,6 +151,9 @@ router.get("/", (req, res, next) => {
 			});
 
 			let sortedIds = sortedObj.map(obj => obj.id);
+			for (let i=0; i<_user.ignored.length; i++){
+				sortedIds.push(_user.ignored[i]);
+			}
 
 			return User.find({ _id: { $in: sortedIds } }).populate({
 				path: "movies",

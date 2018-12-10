@@ -31,7 +31,8 @@ const UserSchema = mongoose.Schema({
 			_id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 			chatroom: { type: mongoose.Schema.Types.ObjectId, ref: "Conversation" }
 		}
-	]
+	],
+	ignored: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
 });
 
 UserSchema.methods.serialize = function() {

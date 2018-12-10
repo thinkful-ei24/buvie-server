@@ -63,7 +63,9 @@ router.put("/ignore/:id", jsonParser, (req, res, next) => {
 	User.findOne({_id: id})
 		.then((user) => {
 			if(user.ignored.find(userId => userId.toString() === ignored)){
-				return;
+				user.ignored = user.ignored.filter(userId => userId.toString() !== ignored);
+				user.ignored.push(ignored);
+				return User.findOneAndUpdate({_id: id}, {ignored: user.ignored}, {new: true});
 			}else {
 				return 	User.findOneAndUpdate({ _id: id }, { $push: { ignored: ignored } }, { new: true });
 			}

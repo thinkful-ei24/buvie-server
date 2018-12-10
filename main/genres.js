@@ -19,8 +19,10 @@ router.put("/popcorn", jsonParser, (req, res, next) => {
 		_user = user;
 
 		return User.findOne({ _id: popcornedId })
+			.populate({ path: "matched._id", select: "username" })
 			.then(user => {
-				if (user.popcorned.find(id => id.toString() === popcornerId)) {
+				console.log(user.matched);
+				if (user.popcorned.find(id => id.toString() === popcornerId)||user.matched.find(id =>id._id._id.toString() === popcornerId)) {
 					return;
 				} else if (_user.popcorned.find(id => id.toString() === popcornedId)) {
 					Conversation.create({ matched: [popcornedId, popcornerId] }).then(
@@ -186,7 +188,6 @@ router.get("/matches/:id", (req, res, next) => {
 	}
 
 	User.findOne({ _id: id }, { matches: 1 })
-		// .populate({ path: "matched._id", select: "username" })
 		.populate({ path: "matched._id", select: "username" })
 		.populate({ path: "matched.chatroom", select: "_id" })
 

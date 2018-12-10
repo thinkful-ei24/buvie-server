@@ -7,8 +7,7 @@
     "mongo": true,
     "jest": true
   },
-  "plugins": ["react"],
-  "extends": ["eslint:recommended", "plugin:react/recommended"],
+  "extends": ["eslint:recommended"],
   "parserOptions": {
     "ecmaVersion": 2018,
     "sourceType": "module",
@@ -37,8 +36,7 @@
     "superInFunctions": true,
     "templateStrings": true,
     "unicodeCodePointEscapes": true,
-    "globalReturn": true,
-    "jsx": true
+    "globalReturn": true
   },
   "rules": {
     "indent":["error",2,{"SwitchCase":1}],
@@ -63,8 +61,6 @@
     "no-trailing-spaces": "error",
     "no-multiple-empty-lines": "error",
     "keyword-spacing": "error",
-    "comma-spacing": "error",
-    "react/prop-types": "off",
-    "react/react-in-jsx-scope": "off"
+    "comma-spacing": "error"
   }
 }

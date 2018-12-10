@@ -17,7 +17,6 @@ router.put("/popcorn", jsonParser, (req, res, next) => {
 	// look up the user who popcorned and check if the user they popcorned has already popcorned them
 	User.findOne({ _id: popcornerId }).then(user => {
 		_user = user;
-
 		return User.findOne({ _id: popcornedId })
 			.populate({ path: "matched._id", select: "username" })
 			.then(user => {
@@ -136,6 +135,7 @@ router.get("/", (req, res, next) => {
 		.populate({ path: "matched._id", select: "username" })
 		.then(user => {
 			_user = user;
+			console.log(_user);
 			movies = user.movies;
 			// proportion = Math.ceil(movies.length * 0.55);
 			return Movie.find({ _id: { $in: movies } }, { _id: 0, users: 1 });

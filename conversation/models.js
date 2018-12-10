@@ -9,7 +9,8 @@ const ConversationSchema = mongoose.Schema({
 	messages: [
 		{
 			_id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-			message: { type: String }
+			message: { type: String },
+			handle: String
 		}
 	]
 });

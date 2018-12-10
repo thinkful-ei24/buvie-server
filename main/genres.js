@@ -60,8 +60,14 @@ router.put("/popcorn", jsonParser, (req, res, next) => {
 router.put("/ignore/:id", jsonParser, (req, res, next) => {
 	const id = req.user.id;
 	const ignored = req.body.userId;
-
-	User.findOneAndUpdate({ _id: id }, { $push: { ignored: ignored } }, { new: true })
+	User.findOne({_id: id})
+		.then((user) => {
+			if(user.ignored.find(userId => userId.toString() === ignored)){
+				return;
+			}else {
+				return 	User.findOneAndUpdate({ _id: id }, { $push: { ignored: ignored } }, { new: true });
+			}
+		})
 		.then(() => res.sendStatus(204))
 		.catch(err => next(err));
 })
@@ -154,7 +160,6 @@ router.get("/", (req, res, next) => {
 			for (let i=0; i<_user.ignored.length; i++){
 				sortedIds.push(_user.ignored[i]);
 			}
-			console.log(sortedIds);
 
 			return User.find({ _id: { $in: sortedIds } }).populate({
 				path: "movies",
@@ -163,7 +168,6 @@ router.get("/", (req, res, next) => {
 			// res.status(200).json({ matches: ourMatches });
 		})
 		.then(users => {
-			console.log(users);
 			let serializedUser = users.map(user => user.serialize());
 			res.json(serializedUser);
 		})

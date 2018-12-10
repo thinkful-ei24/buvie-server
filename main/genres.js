@@ -140,7 +140,7 @@ router.get("/", (req, res, next) => {
 			for (let id in userIdDictionary) {
 				if (id !== req.user.id
 					&& !_user.popcorned.find(userId => userId.toString() === id)
-					&& !_user.matched.find(id => id._id._id.toString() === popcornerId)
+					&& !_user.matched.find(userId => userId._id._id.toString() === id)
 					&& !_user.ignored.find(userId => userId.toString() === id)) {
 					ourMatches.push({ id, count: userIdDictionary[id] });
 				}
@@ -154,6 +154,7 @@ router.get("/", (req, res, next) => {
 			for (let i=0; i<_user.ignored.length; i++){
 				sortedIds.push(_user.ignored[i]);
 			}
+			console.log(sortedIds);
 
 			return User.find({ _id: { $in: sortedIds } }).populate({
 				path: "movies",

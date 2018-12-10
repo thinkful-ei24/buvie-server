@@ -191,7 +191,6 @@ router.get("/matches/:id", (req, res, next) => {
 		.populate({ path: "matched.chatroom", select: "_id" })
 
 		.then(matches => {
-			matches.forEach(id => console.log(id));
 			res.status(200).json(matches);
 		})
 		.catch(err => next(err));

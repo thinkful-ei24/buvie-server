@@ -21,7 +21,6 @@ router.put("/popcorn", jsonParser, (req, res, next) => {
 		return User.findOne({ _id: popcornedId })
 			.populate({ path: "matched._id", select: "username" })
 			.then(user => {
-				console.log(user.matched);
 				if (user.popcorned.find(id => id.toString() === popcornerId)||user.matched.find(id =>id._id._id.toString() === popcornerId)) {
 					return;
 				} else if (_user.popcorned.find(id => id.toString() === popcornedId)) {
@@ -192,6 +191,7 @@ router.get("/matches/:id", (req, res, next) => {
 		.populate({ path: "matched.chatroom", select: "_id" })
 
 		.then(matches => {
+			matches.forEach(id => console.log(id));
 			res.status(200).json(matches);
 		})
 		.catch(err => next(err));

@@ -13,15 +13,14 @@ router.put("/popcorn", jsonParser, (req, res, next) => {
 	const popcornerId = req.user.id;
 	const popcornedId = req.body.userId;
 	let _user;
-	//5c0996bc2025921aeac5020b
+
 	// look up the user who popcorned and check if the user they popcorned has already popcorned them
 	User.findOne({ _id: popcornerId }).then(user => {
 		_user = user;
-
 		return User.findOne({ _id: popcornedId })
 			.populate({ path: "matched._id", select: "username" })
 			.then(user => {
-				if (user.popcorned.find(id => id.toString() === popcornerId)||user.matched.find(id =>id._id._id.toString() === popcornerId)) {
+				if (user.popcorned.find(id => id.toString() === popcornerId) || user.matched.find(id => id._id._id.toString() === popcornerId)) {
 					return;
 				} else if (_user.popcorned.find(id => id.toString() === popcornedId)) {
 					Conversation.create({ matched: [popcornedId, popcornerId] }).then(
@@ -45,17 +44,39 @@ router.put("/popcorn", jsonParser, (req, res, next) => {
 						}
 					);
 				} else {
-					return User.findOneAndUpdate(
-						{ _id: popcornedId },
-						{ $push: { popcorned: popcornerId } },
-						{ new: true }
-					);
+					return Promise.all([
+						User.findOneAndUpdate(
+							{ _id: popcornedId },
+							{ $push: { popcorned: popcornerId } },
+							{ new: true }),
+						User.findOneAndUpdate(
+							{ _id: popcornerId },
+							{ $push: { whoUserPopcorned: popcornedId } },
+							{ new: true })
+					])
 				}
 			})
 			.then(() => res.sendStatus(204))
 			.catch(err => next(err));
 	});
 });
+
+router.put("/ignore/:id", jsonParser, (req, res, next) => {
+	const id = req.user.id;
+	const ignored = req.body.userId;
+	User.findOne({ _id: id })
+		.then((user) => {
+			if (user.ignored.find(userId => userId.toString() === ignored)) {
+				user.ignored = user.ignored.filter(userId => userId.toString() !== ignored);
+				user.ignored.push(ignored);
+				return User.findOneAndUpdate({ _id: id }, { ignored: user.ignored }, { new: true });
+			} else {
+				return User.findOneAndUpdate({ _id: id }, { $push: { ignored: ignored } }, { new: true });
+			}
+		})
+		.then(() => res.sendStatus(204))
+		.catch(err => next(err));
+})
 
 router.put("/:id", jsonParser, (req, res, next) => {
 	let { id } = req.params;
@@ -107,10 +128,14 @@ router.get("/", (req, res, next) => {
 
 	let movies;
 	let sortingMatchedPeopleArr;
-
+	let _user;
+	let sortedIds;
 	const { id } = req.user;
 	User.findById(id)
+		.populate({ path: "matched._id", select: "username" })
 		.then(user => {
+			_user = user;
+			console.log(_user);
 			movies = user.movies;
 			// proportion = Math.ceil(movies.length * 0.55);
 			return Movie.find({ _id: { $in: movies } }, { _id: 0, users: 1 });
@@ -127,7 +152,10 @@ router.get("/", (req, res, next) => {
 			}
 
 			for (let id in userIdDictionary) {
-				if (id !== req.user.id) {
+				if (id !== req.user.id
+					&& !_user.matched.find(userId => userId._id._id.toString() === id)
+					&& !_user.ignored.find(userId => userId.toString() === id)
+					&& !_user.whoUserPopcorned.find(userId => userId.toString() === id)) {
 					ourMatches.push({ id, count: userIdDictionary[id] });
 				}
 			}
@@ -136,8 +164,11 @@ router.get("/", (req, res, next) => {
 				return user2.count - user1.count;
 			});
 
-			let sortedIds = sortedObj.map(obj => obj.id);
-
+			sortedIds = sortedObj.map(obj => obj.id);
+			for (let i = 0; i < _user.ignored.length; i++) {
+				sortedIds.push(_user.ignored[i].toString());
+			}
+			console.log(sortedIds);
 			return User.find({ _id: { $in: sortedIds } }).populate({
 				path: "movies",
 				select: "title poster"
@@ -145,9 +176,13 @@ router.get("/", (req, res, next) => {
 			// res.status(200).json({ matches: ourMatches });
 		})
 		.then(users => {
-			console.log(users);
 			let serializedUser = users.map(user => user.serialize());
-			res.json(serializedUser);
+			let response = [];
+			for (let i = 0; i < sortedIds.length; i++) {
+				let currentUser = serializedUser.find(user => user.id.toString() === sortedIds[i]);
+				response.push(currentUser);
+			}
+			res.json(response);
 		})
 		.catch(err => {
 			next(err);

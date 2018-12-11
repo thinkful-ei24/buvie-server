@@ -159,6 +159,5 @@ router.get("/:id", (req, res) => {
 		})
 	);
 });
-console.log(requiredFieldsInReqBody);
 
 module.exports = { router };

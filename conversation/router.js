@@ -17,7 +17,6 @@ router.get('/:id', jsonParser, (req, res, next) => {
       if (otherUser.length < conversation.matched.length) {
         for (let i=0; i< conversation.messages.length; i++) {
           conversation.messages[i].room = id;
-          console.log(conversation.messages[i]);
         }
         let response = {
           chatroom: { _id: id },

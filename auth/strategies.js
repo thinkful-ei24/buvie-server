@@ -11,7 +11,7 @@ const { JWT_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } = require('../confi
 
 const localStrategy = new LocalStrategy((username, password, callback) => {
   let user;
-  User.findOne({ username: username })
+  User.findOne({ username: username, googleId: '' })
     .then(_user => {
       user = _user;
       if (!user) {
@@ -61,14 +61,20 @@ const googleStrategy = new GoogleStrategy({
 }, (accessToken, refreshToken, profile, done) => {
   console.log(profile);
   const email = profile.emails[0].value;
-  const username = email;
+  const username = profile.displayName;
+  const googleId = profile.id;
 
-  return User.findOne({ email })
+  return User.findOne({ googleId })
+    .then(user => {
+      if (user) return user;
+      return User.findOne({ email });
+    })
     .then(user => {
       if (user) return user;
       return User.create({
         username,
-        email
+        email,
+        googleId,
       });
     })
     .then(user => {

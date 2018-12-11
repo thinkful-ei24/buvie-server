@@ -8,7 +8,6 @@ const UserSchema = mongoose.Schema({
   username: {
     type: String,
     required: true,
-    unique: true
   },
   password: {
     type: String
@@ -17,6 +16,10 @@ const UserSchema = mongoose.Schema({
     type: String,
     required: true,
     unique: true
+  },
+  googleId: {
+    type: String,
+    default: ''
   },
   genres: [
     {
@@ -34,6 +37,8 @@ const UserSchema = mongoose.Schema({
   ignored: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   whoUserPopcorned: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
 });
+
+UserSchema.index({ googleId: 1, username: 1 }, { unique: true });
 
 UserSchema.methods.serialize = function() {
   return {

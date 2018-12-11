@@ -41,6 +41,7 @@ router.get('/google', passport.authenticate('google', {
 
 router.get('/google/redirect', passport.authenticate('google'), (req, res) => {
   const authToken = createAuthToken(req.user.serialize());
+  console.log('redirecting?');
   res.redirect(`${config.CLIENT_ORIGIN}?authToken=${authToken}`);
 });
 

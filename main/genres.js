@@ -168,7 +168,7 @@ router.get("/", (req, res, next) => {
 			for (let i = 0; i < _user.ignored.length; i++) {
 				sortedIds.push(_user.ignored[i].toString());
 			}
-			console.log(sortedIds);
+
 			return User.find({ _id: { $in: sortedIds } }).populate({
 				path: "movies",
 				select: "title poster"
@@ -180,7 +180,9 @@ router.get("/", (req, res, next) => {
 			let response = [];
 			for (let i = 0; i < sortedIds.length; i++) {
 				let currentUser = serializedUser.find(user => user.id.toString() === sortedIds[i]);
-				response.push(currentUser);
+				if(currentUser){
+					response.push(currentUser);
+				}
 			}
 			res.json(response);
 		})

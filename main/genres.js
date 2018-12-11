@@ -180,7 +180,9 @@ router.get("/", (req, res, next) => {
 			let response = [];
 			for (let i = 0; i < sortedIds.length; i++) {
 				let currentUser = serializedUser.find(user => user.id.toString() === sortedIds[i]);
-				response.push(currentUser);
+				if(currentUser){
+					response.push(currentUser);
+				}
 			}
 			res.json(response);
 		})

@@ -17,6 +17,8 @@ const { router: usersRouter } = require('./users');
 const { router: authRouter, localStrategy, jwtStrategy, googleStrategy } = require('./auth');
 const { router: moviesRouter } = require('./movies');
 const { router: genresRouter } = require('./main/genres');
+const {router: messagesRouter} = require('./conversation/router');
+
 mongoose.Promise = global.Promise;
 const { PORT, DATABASE_URL } = require('./config');
 
@@ -57,6 +59,9 @@ passport.deserializeUser((user, done) => {
 app.use('/api/main', jwtAuth);
 app.use('/api/main', genresRouter);
 app.use('/api/users/', usersRouter);
+
+app.use('/api/messages', jwtAuth);
+app.use('/api/messages', messagesRouter);
 
 app.use('/api/auth/', authRouter);
 app.use('/api/movies/', jwtAuth);

@@ -8,8 +8,9 @@ const ConversationSchema = mongoose.Schema({
 	matched: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 	messages: [
 		{
-			_id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-			message: { type: String }
+			message: { type: String },
+			handle: String,
+			room: { type: mongoose.Schema.Types.ObjectId, ref: "Conversation"}
 		}
 	]
 });

@@ -93,6 +93,11 @@ router.put('/ignore/:id', jsonParser, (req, res, next) => {
     .catch(err => next(err));
 });
 
+router.put('/nevermind/:id', jsonParser, (req, res, next) => {
+  console.log('ran');
+  res.json('it is working');
+})
+
 router.put('/:id', jsonParser, (req, res, next) => {
   let { id } = req.params;
   let updatedUser;

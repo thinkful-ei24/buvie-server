@@ -40,14 +40,16 @@ router.put('/popcorn', jsonParser, (req, res, next) => {
                   { _id: popcornerId },
                   {
                     popcorned: _user.popcorned,
-                    matched: _user.matched
+                    matched: _user.matched,
+                    $push: { notifications: { _id: popcornedId, notificationType: 'matched' } }
                   }
                 ),
                 User.findOneAndUpdate(
                   { _id: popcornedId },
                   {
                     whoUserPopcorned: user.whoUserPopcorned,
-                    matched: user.matched
+                    matched: user.matched,
+                    $push: { notifications: { _id: popcornerId, notificationType: 'matched' } }
                   })
               ]);
             });
@@ -55,7 +57,7 @@ router.put('/popcorn', jsonParser, (req, res, next) => {
           return Promise.all([
             User.findOneAndUpdate(
               { _id: popcornedId },
-              { $push: { popcorned: popcornerId } },
+              { $push: { popcorned: popcornerId, notifications: { _id: popcornerId, notificationType: 'popcorn' } } },
               { new: true }),
             User.findOneAndUpdate(
               { _id: popcornerId },
@@ -276,6 +278,23 @@ router.get('/matches/:id', (req, res, next) => {
 
     .then(matches => {
       res.status(200).json(matches);
+    })
+    .catch(err => next(err));
+});
+
+router.get('/notifications/:id', (req, res, next) => {
+  let { id } = req.params;
+
+  if (req.user.id !== id) {
+    let err = new Error('Hold up sir that is not your id');
+    err.status = 401;
+    return next(err);
+  }
+
+  User.findOne({ _id: id }, { notifications: 1 })
+    .populate({ path: 'notifications._id', select: 'username' })
+    .then(notifications => {
+      res.json(notifications);
     })
     .catch(err => next(err));
 });

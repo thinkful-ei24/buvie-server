@@ -31,10 +31,10 @@ router.put('/popcorn', jsonParser, (req, res, next) => {
                 userId => userId.toString() !== popcornedId
               );
               _user.matched.push({ _id: popcornedId, chatroom });
-              console.log(user.whoUserPopcorned);
+
               user.whoUserPopcorned = user.whoUserPopcorned.filter(userId => userId.toString() !== popcornerId);
               user.matched.push({ _id: popcornerId, chatroom });
-              console.log(user.whoUserPopcorned);
+
               return Promise.all([
                 User.findOneAndUpdate(
                   { _id: popcornerId },
@@ -81,6 +81,13 @@ router.put('/ignore/:id', jsonParser, (req, res, next) => {
       } else {
         return User.findOneAndUpdate({ _id: id }, { $push: { ignored: ignored } }, { new: true });
       }
+    })
+    .then(() => {
+      return User.findOne({ _id: ignored });
+    })
+    .then((user) => {
+      user.whoUserPopcorned = user.whoUserPopcorned.filter(userId => userId.toString() !== id);
+      return User.findOneAndUpdate({ _id: ignored }, { whoUserPopcorned: user.whoUserPopcorned });
     })
     .then(() => res.sendStatus(204))
     .catch(err => next(err));

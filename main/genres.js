@@ -74,13 +74,13 @@ router.put('/ignore/:id', jsonParser, (req, res, next) => {
   const ignored = req.body.userId;
   User.findOne({ _id: id })
     .then((user) => {
-      if (user.ignored.find(userId => userId.toString() === ignored)) {
-        user.ignored = user.ignored.filter(userId => userId.toString() !== ignored);
-        user.ignored.push(ignored);
-        return User.findOneAndUpdate({ _id: id }, { ignored: user.ignored }, { new: true });
-      } else {
-        return User.findOneAndUpdate({ _id: id }, { $push: { ignored: ignored } }, { new: true });
-      }
+      user.ignored = user.ignored.filter(userId => userId.toString() !== ignored);
+      user.ignored.push(ignored);
+      user.popcorned = user.popcorned.filter(userId => userId.toString() !== ignored);
+      return User.findOneAndUpdate({ _id: id }, {
+        popcorned: user.popcorned,
+        ignored: user.ignored
+      }, { new: true });
     })
     .then(() => {
       return User.findOne({ _id: ignored });

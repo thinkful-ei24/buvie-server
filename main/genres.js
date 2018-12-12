@@ -107,15 +107,19 @@ router.put('/nevermind/:id', jsonParser, (req, res, next) => {
   const ignored = req.body.userId;
   User.findOne({ _id: ignored })
     .then((user) => {
+      // get rid of all evidence of notifications and popcorned
       user.popcorned = user.popcorned.filter(userId => userId.toString() !== id);
+      user.notifications = user.notifications.filter(user => user._id.toString() !== id);
       return User.findOneAndUpdate({ _id: ignored }, {
-        popcorned: user.popcorned
+        popcorned: user.popcorned,
+        notifications: user.notifications
       }, { new: true });
     })
     .then(() => {
       return User.findOne({ _id: id });
     })
     .then((user) => {
+      // delete user from pending popcorns
       user.whoUserPopcorned = user.whoUserPopcorned.filter(userId => userId.toString() !== ignored);
       return User.findOneAndUpdate({ _id: id }, { whoUserPopcorned: user.whoUserPopcorned });
     })

@@ -83,9 +83,12 @@ router.put('/ignore/:id', jsonParser, (req, res, next) => {
       user.ignored = user.ignored.filter(userId => userId.toString() !== ignored);
       user.ignored.push(ignored);
       user.popcorned = user.popcorned.filter(userId => userId.toString() !== ignored);
+      user.notifications = user.notifications.filter(user => user._id.toString() !== ignored);
+      console.log(user.notifications);
       return User.findOneAndUpdate({ _id: id }, {
         popcorned: user.popcorned,
-        ignored: user.ignored
+        ignored: user.ignored,
+        notifications: user.notifications
       }, { new: true });
     })
     .then(() => {

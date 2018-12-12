@@ -304,7 +304,21 @@ router.get('/notifications/:id', (req, res, next) => {
 
   User.findOne({ _id: id }, { notifications: 1 })
     .populate({ path: 'notifications._id', select: 'username' })
-    .then(notifications => {
+    .then(response => {
+      const notifications = response.notifications.map(note => {
+        let message;
+        if (note.notificationType === 'popcorn') {
+          message = `${note._id.username} has popcorned you!`;
+        } else if (note.notificationType === 're-popcorn') {
+          message = `${note._id.username} had popcorned you again! Please respond!`;
+        } else if (note.notificationType === 'matched') {
+          message = `You've matched with ${note._id.username}! Start a conversation!`;
+        }
+        return ({
+          _id: note._id._id,
+          message
+        });
+      });
       res.json(notifications);
     })
     .catch(err => next(err));

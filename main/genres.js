@@ -94,9 +94,25 @@ router.put('/ignore/:id', jsonParser, (req, res, next) => {
 });
 
 router.put('/nevermind/:id', jsonParser, (req, res, next) => {
-  console.log('ran');
-  res.json('it is working');
-})
+  const id = req.user.id;
+  const ignored = req.body.userId;
+  User.findOne({ _id: ignored })
+    .then((user) => {
+      user.popcorned = user.popcorned.filter(userId => userId.toString() !== id);
+      return User.findOneAndUpdate({ _id: ignored }, {
+        popcorned: user.popcorned
+      }, { new: true });
+    })
+    .then(() => {
+      return User.findOne({ _id: id });
+    })
+    .then((user) => {
+      user.whoUserPopcorned = user.whoUserPopcorned.filter(userId => userId.toString() !== ignored);
+      return User.findOneAndUpdate({ _id: id }, { whoUserPopcorned: user.whoUserPopcorned });
+    })
+    .then(() => res.sendStatus(204))
+    .catch(err => next(err));
+});
 
 router.put('/:id', jsonParser, (req, res, next) => {
   let { id } = req.params;

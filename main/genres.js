@@ -31,18 +31,25 @@ router.put('/popcorn', jsonParser, (req, res, next) => {
                 userId => userId.toString() !== popcornedId
               );
               _user.matched.push({ _id: popcornedId, chatroom });
+              
+              user.whoUserPopcorned = user.whoUserPopcorned.filter(userId => userId.toString() !== popcornedId);
+              user.matched.push({ _id: popcornerId, chatroom });
               return Promise.all([
                 User.findOneAndUpdate(
                   { _id: popcornerId },
-                  { popcorned: _user.popcorned, matched: _user.matched }
+                  {
+                    popcorned: _user.popcorned,
+                    matched: _user.matched
+                  }
                 ),
                 User.findOneAndUpdate(
                   { _id: popcornedId },
-                  { $push: { matched: { _id: popcornerId, chatroom } } }
-                )
+                  {
+                    whoUserPopcorned: user.whoUserPopcorned,
+                    matched: user.matched
+                  })
               ]);
-            }
-          );
+            });
         } else {
           return Promise.all([
             User.findOneAndUpdate(
@@ -214,9 +221,13 @@ router.get('/popcorn/:id', (req, res, next) => {
       path: 'popcorned',
       select: 'username'
     })
+    .populate({
+      path: 'whoUserPopcorned',
+      select: 'username'
+    })
     .then(user => {
-      const { popcorned } = user;
-      res.json(popcorned);
+      const { popcorned, whoUserPopcorned } = user;
+      res.json({ popcorned, pendingPopcorn: whoUserPopcorned });
     })
     .catch(err => next(err));
 });

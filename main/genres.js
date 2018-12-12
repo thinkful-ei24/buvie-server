@@ -31,18 +31,26 @@ router.put('/popcorn', jsonParser, (req, res, next) => {
                 userId => userId.toString() !== popcornedId
               );
               _user.matched.push({ _id: popcornedId, chatroom });
+
+              user.whoUserPopcorned = user.whoUserPopcorned.filter(userId => userId.toString() !== popcornerId);
+              user.matched.push({ _id: popcornerId, chatroom });
+
               return Promise.all([
                 User.findOneAndUpdate(
                   { _id: popcornerId },
-                  { popcorned: _user.popcorned, matched: _user.matched }
+                  {
+                    popcorned: _user.popcorned,
+                    matched: _user.matched
+                  }
                 ),
                 User.findOneAndUpdate(
                   { _id: popcornedId },
-                  { $push: { matched: { _id: popcornerId, chatroom } } }
-                )
+                  {
+                    whoUserPopcorned: user.whoUserPopcorned,
+                    matched: user.matched
+                  })
               ]);
-            }
-          );
+            });
         } else {
           return Promise.all([
             User.findOneAndUpdate(
@@ -66,13 +74,41 @@ router.put('/ignore/:id', jsonParser, (req, res, next) => {
   const ignored = req.body.userId;
   User.findOne({ _id: id })
     .then((user) => {
-      if (user.ignored.find(userId => userId.toString() === ignored)) {
-        user.ignored = user.ignored.filter(userId => userId.toString() !== ignored);
-        user.ignored.push(ignored);
-        return User.findOneAndUpdate({ _id: id }, { ignored: user.ignored }, { new: true });
-      } else {
-        return User.findOneAndUpdate({ _id: id }, { $push: { ignored: ignored } }, { new: true });
-      }
+      user.ignored = user.ignored.filter(userId => userId.toString() !== ignored);
+      user.ignored.push(ignored);
+      user.popcorned = user.popcorned.filter(userId => userId.toString() !== ignored);
+      return User.findOneAndUpdate({ _id: id }, {
+        popcorned: user.popcorned,
+        ignored: user.ignored
+      }, { new: true });
+    })
+    .then(() => {
+      return User.findOne({ _id: ignored });
+    })
+    .then((user) => {
+      user.whoUserPopcorned = user.whoUserPopcorned.filter(userId => userId.toString() !== id);
+      return User.findOneAndUpdate({ _id: ignored }, { whoUserPopcorned: user.whoUserPopcorned });
+    })
+    .then(() => res.sendStatus(204))
+    .catch(err => next(err));
+});
+
+router.put('/nevermind/:id', jsonParser, (req, res, next) => {
+  const id = req.user.id;
+  const ignored = req.body.userId;
+  User.findOne({ _id: ignored })
+    .then((user) => {
+      user.popcorned = user.popcorned.filter(userId => userId.toString() !== id);
+      return User.findOneAndUpdate({ _id: ignored }, {
+        popcorned: user.popcorned
+      }, { new: true });
+    })
+    .then(() => {
+      return User.findOne({ _id: id });
+    })
+    .then((user) => {
+      user.whoUserPopcorned = user.whoUserPopcorned.filter(userId => userId.toString() !== ignored);
+      return User.findOneAndUpdate({ _id: id }, { whoUserPopcorned: user.whoUserPopcorned });
     })
     .then(() => res.sendStatus(204))
     .catch(err => next(err));
@@ -214,9 +250,13 @@ router.get('/popcorn/:id', (req, res, next) => {
       path: 'popcorned',
       select: 'username'
     })
+    .populate({
+      path: 'whoUserPopcorned',
+      select: 'username'
+    })
     .then(user => {
-      const { popcorned } = user;
-      res.json(popcorned);
+      const { popcorned, whoUserPopcorned } = user;
+      res.json({ popcorned, pendingPopcorn: whoUserPopcorned });
     })
     .catch(err => next(err));
 });

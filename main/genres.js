@@ -20,8 +20,12 @@ router.put('/popcorn', jsonParser, (req, res, next) => {
     return User.findOne({ _id: popcornedId })
       .populate({ path: 'matched._id', select: 'username' })
       .then(user => {
-        if (user.popcorned.find(id => id.toString() === popcornerId) || user.matched.find(id => id._id._id.toString() === popcornerId)) {
+        if (user.matched.find(id => id._id._id.toString() === popcornerId)) {
           return;
+        } else if (user.popcorned.find(id => id.toString() === popcornerId)) {
+          user.notifications = user.notifications.filter(user => user._id.toString() !== popcornerId);
+          user.notifications.push({ _id: popcornerId, notificationType: 're-popcorn' });
+          return User.findOneAndUpdate({ _id: popcornedId }, { notifications: user.notifications });
         } else if (_user.popcorned.find(id => id.toString() === popcornedId)) {
           Conversation.create({ matched: [popcornedId, popcornerId] }).then(
             conversation => {

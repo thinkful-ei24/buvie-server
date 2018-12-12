@@ -31,9 +31,10 @@ router.put('/popcorn', jsonParser, (req, res, next) => {
                 userId => userId.toString() !== popcornedId
               );
               _user.matched.push({ _id: popcornedId, chatroom });
-              
-              user.whoUserPopcorned = user.whoUserPopcorned.filter(userId => userId.toString() !== popcornedId);
+              console.log(user.whoUserPopcorned);
+              user.whoUserPopcorned = user.whoUserPopcorned.filter(userId => userId.toString() !== popcornerId);
               user.matched.push({ _id: popcornerId, chatroom });
+              console.log(user.whoUserPopcorned);
               return Promise.all([
                 User.findOneAndUpdate(
                   { _id: popcornerId },

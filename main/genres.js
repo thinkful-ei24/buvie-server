@@ -316,7 +316,8 @@ router.get('/notifications/:id', (req, res, next) => {
         }
         return ({
           _id: note._id._id,
-          message
+          message,
+          date: note.date
         });
       });
       res.json(notifications);

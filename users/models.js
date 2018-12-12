@@ -39,7 +39,8 @@ const UserSchema = mongoose.Schema({
   notifications: [
     {
       _id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-      notificationType: String
+      notificationType: String,
+      date: { type: Date, default: Date.now }
     }
   ]
 });

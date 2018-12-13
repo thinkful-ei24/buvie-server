@@ -39,7 +39,18 @@ const UserSchema = mongoose.Schema({
     }
   ],
   ignored: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  whoUserPopcorned: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+  whoUserPopcorned: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  notifications: [
+    {
+      _id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      notificationType: String,
+      date: { type: Date, default: Date.now }
+    }
+  ],
+  notificationCheck: {
+    type: Date,
+    default: Date.now
+  }
 });
 
 UserSchema.index({ googleId: 1, username: 1 }, { unique: true });

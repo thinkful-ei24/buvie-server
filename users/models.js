@@ -26,6 +26,10 @@ const UserSchema = mongoose.Schema({
       type: String
     }
   ],
+  location: {
+    type: Object,
+    default: {}
+  },
   movies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Movie' }],
   popcorned: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   matched: [
@@ -59,7 +63,8 @@ UserSchema.methods.serialize = function() {
     genres: this.genres || '',
     movies: this.movies || '',
     popcorned: this.popcorned || [],
-    matched: this.matched || []
+    matched: this.matched || [],
+    location: this.location || {},
   };
 };
 

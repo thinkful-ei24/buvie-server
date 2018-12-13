@@ -137,8 +137,11 @@ router.put('/notificationtime/:id', (req, res, next) => {
     next(err);
   }
 
-  User.findOneAndUpdate({ _id: id }, { notificationCheck: Date.now() })
-    .then(() => res.sendStatus(204))
+  User.findOneAndUpdate({ _id: id }, { notificationCheck: Date.now() }, { new: true })
+    .then((user) => {
+      const { notificationCheck } = user;
+      res.json(notificationCheck);
+    })
     .catch(err => next(err));
 });
 

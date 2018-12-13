@@ -280,4 +280,26 @@ router.get('/matches/:id', (req, res, next) => {
     .catch(err => next(err));
 });
 
+//LOCATION OF USERS
+
+//GET USERS NEAR THE USER MAKING THE REQUEST
+router.get('/location', (req, res, next) => {
+
+});
+
+//UPDATE THE USER'S LOCATION
+router.put('/location/:id', (req, res, next) => {
+  const { id } = req.params;
+  const { city, coordinates } = req.body;
+
+  if (req.user.id !== id) {
+    let err = new Error('Woah woah woah, no way baby. That ain\'t yours');
+    err.status = 401;
+    next(err);
+  }
+  console.log('updating user');
+  User.findOneAndUpdate({ _id: id }, { location: { city, coordinates } })
+    .then((user) => res.json(user))
+    .catch(err => next(err));
+})
 module.exports = { router };

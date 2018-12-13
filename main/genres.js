@@ -126,6 +126,22 @@ router.put('/nevermind/:id', jsonParser, (req, res, next) => {
     .catch(err => next(err));
 });
 
+// updates the time user last checked notification so client side knows which
+// notifications are new
+router.put('/notificationtime/:id', (req, res, next) => {
+  let { id } = req.params;
+
+  if (req.user.id !== id) {
+    let err = new Error('Hold up sir that is not your id');
+    err.status = 401;
+    next(err);
+  }
+
+  User.findOneAndUpdate({ _id: id }, { notificationCheck: Date.now() })
+    .then(() => res.sendStatus(204))
+    .catch(err => next(err));
+});
+
 router.put('/:id', jsonParser, (req, res, next) => {
   let { id } = req.params;
   let updatedUser;
@@ -301,7 +317,7 @@ router.get('/notifications/:id', (req, res, next) => {
     return next(err);
   }
 
-  User.findOne({ _id: id }, { notifications: 1 })
+  User.findOne({ _id: id }, { notifications: 1, notificationCheck: 1 })
     .populate({ path: 'notifications._id', select: 'username' })
     .then(response => {
       const notifications = response.notifications.map(note => {
@@ -320,7 +336,7 @@ router.get('/notifications/:id', (req, res, next) => {
           type: note.notificationType
         });
       });
-      res.json(notifications);
+      res.json({ notifications, notificationCheck: response.notificationCheck });
     })
     .catch(err => next(err));
 });

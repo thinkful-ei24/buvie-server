@@ -42,7 +42,11 @@ const UserSchema = mongoose.Schema({
       notificationType: String,
       date: { type: Date, default: Date.now }
     }
-  ]
+  ],
+  notificationCheck: {
+    type: Date,
+    default: Date.now
+  }
 });
 
 UserSchema.index({ googleId: 1, username: 1 }, { unique: true });

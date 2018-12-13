@@ -137,7 +137,7 @@ router.put('/notificationtime/:id', (req, res, next) => {
     next(err);
   }
 
-  User.findOneAndUpdate({ _id: id }, {notificationCheck: Date.now })
+  User.findOneAndUpdate({ _id: id }, { notificationCheck: Date.now() })
     .then(() => res.sendStatus(204))
     .catch(err => next(err));
 });
@@ -317,7 +317,7 @@ router.get('/notifications/:id', (req, res, next) => {
     return next(err);
   }
 
-  User.findOne({ _id: id }, { notifications: 1 })
+  User.findOne({ _id: id }, { notifications: 1, notificationCheck: 1 })
     .populate({ path: 'notifications._id', select: 'username' })
     .then(response => {
       const notifications = response.notifications.map(note => {
@@ -336,7 +336,7 @@ router.get('/notifications/:id', (req, res, next) => {
           type: note.notificationType
         });
       });
-      res.json(notifications);
+      res.json({ notifications, notificationCheck: response.notificationCheck });
     })
     .catch(err => next(err));
 });

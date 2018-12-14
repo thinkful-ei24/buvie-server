@@ -246,7 +246,7 @@ router.get('/', (req, res, next) => {
 
       return User.find({ _id: { $in: sortedIds } }).populate({
         path: 'movies',
-        select: 'title poster'
+        select: 'title poster imdbId'
       });
     })
     .then(users => {

@@ -262,6 +262,7 @@ router.get('/matches/:id', (req, res, next) => {
 });
 
 //NICK PROFILE PICTURE STUFF
+
 router.get('/profilePicture/:id', (req, res, next) => {
   let { id } = req.params;
 
@@ -295,9 +296,11 @@ router.post('/profilePicture/:id', jsonParser, (req, res, next) => {
     { new: true }
   )
     .then(user => {
-      console.log(user);
+      res.status(201).json(user);
     })
     .catch(err => console.log(err));
 });
+
+//NICK PROFILE PICTURE STUFF
 
 module.exports = { router };

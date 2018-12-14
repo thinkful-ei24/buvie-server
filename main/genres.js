@@ -349,11 +349,20 @@ router.get('/notifications/:id', (req, res, next) => {
 
 //GET USERS NEAR THE USER MAKING THE REQUEST
 router.get('/location', (req, res, next) => {
+  const lng = parseFloat(req.query.lng);
+  const lat = parseFloat(req.query.lat);
 
+  User.aggregate().near({
+    near: {type: 'Point', coordinates: [lng, lat]},
+    maxDistance: 1609340,
+    spherical: true,
+    distanceField: "dis"
+  }).then(users => res.json(users)
+  ).catch(err => next(err));
 });
 
 //UPDATE THE USER'S LOCATION
-router.put('/location/:id', (req, res, next) => {
+router.put('/location/:id', jsonParser, (req, res, next) => {
   const { id } = req.params;
   const { city, coordinates } = req.body;
 
@@ -362,8 +371,7 @@ router.put('/location/:id', (req, res, next) => {
     err.status = 401;
     next(err);
   }
-  console.log('updating user');
-  User.findOneAndUpdate({ _id: id }, { location: { city, coordinates } })
+  User.findOneAndUpdate({ _id: id }, { location: { city, coordinates }, geometry: { type: 'point', coordinates: [coordinates.longitude, coordinates.latitude] } })
     .then((user) => res.json(user))
     .catch(err => next(err));
 })

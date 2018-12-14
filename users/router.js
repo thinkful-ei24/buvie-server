@@ -148,17 +148,19 @@ router.get('/', (req, res) => {
 });
 
 // Gets particular user for their movies and their genres
-router.get('/:id', (req, res) => {
-  let { id } = req.params;
 
-  return User.findById(id).then(user =>
-    res.json({
-      username: user.username,
-      movies: user.movies,
-      genres: user.genres,
+router.get("/:id", (req, res) => {
+	let { id } = req.params;
+
+	return User.findById(id).then(user =>
+		res.json({
+			username: user.username,
+			movies: user.movies,
+			genres: user.genres,
+			location: user.location,
       profilePicture: user.profilePicture
-    })
-  );
+		})
+	);
 });
 
 module.exports = { router };

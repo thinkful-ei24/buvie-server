@@ -4,6 +4,17 @@ const mongoose = require('mongoose');
 
 mongoose.Promise = global.Promise;
 
+const GeoSchema = mongoose.Schema({
+  type: {
+    type: String,
+    default: 'Point'
+  },
+  coordinates: {
+    type: [Number],
+    index: '2dsphere'
+  }
+});
+
 const UserSchema = mongoose.Schema({
   username: {
     type: String,
@@ -26,6 +37,11 @@ const UserSchema = mongoose.Schema({
       type: String
     }
   ],
+  location: {
+    type: Object,
+    default: {}
+  },
+  geometry: GeoSchema,
   movies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Movie' }],
   popcorned: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   matched: [
@@ -36,7 +52,18 @@ const UserSchema = mongoose.Schema({
   ],
   ignored: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   whoUserPopcorned: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  profilePicture: { type: String }
+  profilePicture: { type: String },
+  notifications: [
+    {
+      _id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      notificationType: String,
+      date: { type: Date, default: Date.now }
+    }
+  ],
+  notificationCheck: {
+    type: Date,
+    default: Date.now
+  }
 });
 
 UserSchema.index({ googleId: 1, username: 1 }, { unique: true });
@@ -50,7 +77,8 @@ UserSchema.methods.serialize = function() {
     movies: this.movies || '',
     popcorned: this.popcorned || [],
     matched: this.matched || [],
-    profilePicture: this.profilePicture || ''
+    profilePicture: this.profilePicture || '',
+    location: this.location || {}
   };
 };
 

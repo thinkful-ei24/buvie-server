@@ -7,7 +7,7 @@ mongoose.Promise = global.Promise;
 const UserSchema = mongoose.Schema({
   username: {
     type: String,
-    required: true,
+    required: true
   },
   password: {
     type: String
@@ -35,7 +35,8 @@ const UserSchema = mongoose.Schema({
     }
   ],
   ignored: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  whoUserPopcorned: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+  whoUserPopcorned: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  profilePicture: { type: String }
 });
 
 UserSchema.index({ googleId: 1, username: 1 }, { unique: true });
@@ -48,7 +49,8 @@ UserSchema.methods.serialize = function() {
     genres: this.genres || '',
     movies: this.movies || '',
     popcorned: this.popcorned || [],
-    matched: this.matched || []
+    matched: this.matched || [],
+    profilePicture: this.profilePicture || ''
   };
 };
 

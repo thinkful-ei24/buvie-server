@@ -8,6 +8,8 @@ const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
 const uniqid = require('uniqid');
 const socket = require('socket.io');
+const fetch = require('node-fetch');
+const { CLOUDINARY_BASE_URL, CLOUDINARY_UPLOAD_PRESET } = require('../config');
 
 router.put('/popcorn', jsonParser, (req, res, next) => {
   const popcornerId = req.user.id;
@@ -20,7 +22,10 @@ router.put('/popcorn', jsonParser, (req, res, next) => {
     return User.findOne({ _id: popcornedId })
       .populate({ path: 'matched._id', select: 'username' })
       .then(user => {
-        if (user.popcorned.find(id => id.toString() === popcornerId) || user.matched.find(id => id._id._id.toString() === popcornerId)) {
+        if (
+          user.popcorned.find(id => id.toString() === popcornerId) ||
+					user.matched.find(id => id._id._id.toString() === popcornerId)
+        ) {
           return;
         } else if (_user.popcorned.find(id => id.toString() === popcornedId)) {
           Conversation.create({ matched: [popcornedId, popcornerId] }).then(
@@ -48,11 +53,13 @@ router.put('/popcorn', jsonParser, (req, res, next) => {
             User.findOneAndUpdate(
               { _id: popcornedId },
               { $push: { popcorned: popcornerId } },
-              { new: true }),
+              { new: true }
+            ),
             User.findOneAndUpdate(
               { _id: popcornerId },
               { $push: { whoUserPopcorned: popcornedId } },
-              { new: true })
+              { new: true }
+            )
           ]);
         }
       })
@@ -65,13 +72,23 @@ router.put('/ignore/:id', jsonParser, (req, res, next) => {
   const id = req.user.id;
   const ignored = req.body.userId;
   User.findOne({ _id: id })
-    .then((user) => {
+    .then(user => {
       if (user.ignored.find(userId => userId.toString() === ignored)) {
-        user.ignored = user.ignored.filter(userId => userId.toString() !== ignored);
+        user.ignored = user.ignored.filter(
+          userId => userId.toString() !== ignored
+        );
         user.ignored.push(ignored);
-        return User.findOneAndUpdate({ _id: id }, { ignored: user.ignored }, { new: true });
+        return User.findOneAndUpdate(
+          { _id: id },
+          { ignored: user.ignored },
+          { new: true }
+        );
       } else {
-        return User.findOneAndUpdate({ _id: id }, { $push: { ignored: ignored } }, { new: true });
+        return User.findOneAndUpdate(
+          { _id: id },
+          { $push: { ignored: ignored } },
+          { new: true }
+        );
       }
     })
     .then(() => res.sendStatus(204))
@@ -160,10 +177,12 @@ router.get('/', (req, res, next) => {
       }
 
       for (let id in userIdDictionary) {
-        if (id !== req.user.id
-          && !_user.matched.find(userId => userId._id._id.toString() === id)
-          && !_user.ignored.find(userId => userId.toString() === id)
-          && !_user.whoUserPopcorned.find(userId => userId.toString() === id)) {
+        if (
+          id !== req.user.id &&
+					!_user.matched.find(userId => userId._id._id.toString() === id) &&
+					!_user.ignored.find(userId => userId.toString() === id) &&
+					!_user.whoUserPopcorned.find(userId => userId.toString() === id)
+        ) {
           ourMatches.push({ id, count: userIdDictionary[id] });
         }
       }
@@ -186,7 +205,9 @@ router.get('/', (req, res, next) => {
       let serializedUser = users.map(user => user.serialize());
       let response = [];
       for (let i = 0; i < sortedIds.length; i++) {
-        let currentUser = serializedUser.find(user => user.id.toString() === sortedIds[i]);
+        let currentUser = serializedUser.find(
+          user => user.id.toString() === sortedIds[i]
+        );
         if (currentUser) {
           response.push(currentUser);
         }
@@ -238,6 +259,45 @@ router.get('/matches/:id', (req, res, next) => {
       res.status(200).json(matches);
     })
     .catch(err => next(err));
+});
+
+//NICK PROFILE PICTURE STUFF
+router.get('/profilePicture/:id', (req, res, next) => {
+  let { id } = req.params;
+
+  User.findOne({ _id: id }, { profilePicture: 1 })
+    .then(user => {
+      res.json(user);
+    })
+    .catch(err => next(err));
+});
+
+router.post('/profilePicture/:id', jsonParser, (req, res, next) => {
+  let { id } = req.params;
+  let form = req.body;
+
+  console.log(req.body);
+  console.log(req.user.id);
+
+  if (req.user.id !== id) {
+    let err = new Error('Hold up sir that is not your id');
+    err.status = 401;
+    return next(err);
+  }
+
+  console.log(req.body, 'line 281');
+
+  let { profilePic } = req.body;
+
+  User.findOneAndUpdate(
+    { _id: id },
+    { profilePicture: profilePic },
+    { new: true }
+  )
+    .then(user => {
+      console.log(user);
+    })
+    .catch(err => console.log(err));
 });
 
 module.exports = { router };

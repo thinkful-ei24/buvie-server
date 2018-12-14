@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const morgan = require('morgan');
 const passport = require('passport');
 const socket = require('socket.io');
+const bodyParser = require('body-parser');
 
 // Here we use destructuring assignment with renaming so the two variables
 // called router (from ./users and ./auth) have different names
@@ -14,10 +15,15 @@ const socket = require('socket.io');
 // console.log(jimmy); // Stewart - the variable name is jimmy, not james
 // console.log(bobby); // De Niro - the variable name is bobby, not robert
 const { router: usersRouter } = require('./users');
-const { router: authRouter, localStrategy, jwtStrategy, googleStrategy } = require('./auth');
+const {
+  router: authRouter,
+  localStrategy,
+  jwtStrategy,
+  googleStrategy
+} = require('./auth');
 const { router: moviesRouter } = require('./movies');
 const { router: genresRouter } = require('./main/genres');
-const {router: messagesRouter} = require('./conversation/router');
+const { router: messagesRouter } = require('./conversation/router');
 
 mongoose.Promise = global.Promise;
 const { PORT, DATABASE_URL } = require('./config');
@@ -49,10 +55,8 @@ passport.serializeUser((user, done) => {
   done(null, user.serialize());
 });
 passport.deserializeUser((user, done) => {
-  user.findOne({ _id: user.id })
-    .then(user => done(null, user));
+  user.findOne({ _id: user.id }).then(user => done(null, user));
 });
-
 
 //MOUNT ROUTERS
 
@@ -134,7 +138,7 @@ if (require.main === module) {
   runServer(DATABASE_URL)
     .then(() => {
       const io = socket(server);
-      io.on('connection', (socket) => {
+      io.on('connection', socket => {
         console.log('made connection', socket.id);
         socket.on('subscribe', room => {
           console.log('joining ', room);
@@ -146,9 +150,8 @@ if (require.main === module) {
           io.sockets.in(data.room).emit('chat', data);
         });
       });
-    }
-
-    ).catch(err => console.error(err));
+    })
+    .catch(err => console.error(err));
 }
 
 module.exports = { app, runServer, closeServer };

@@ -18,7 +18,7 @@ const GeoSchema = mongoose.Schema({
 const UserSchema = mongoose.Schema({
   username: {
     type: String,
-    required: true,
+    required: true
   },
   password: {
     type: String
@@ -52,6 +52,7 @@ const UserSchema = mongoose.Schema({
   ],
   ignored: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   whoUserPopcorned: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  profilePicture: { type: String },
   notifications: [
     {
       _id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -76,7 +77,8 @@ UserSchema.methods.serialize = function() {
     movies: this.movies || '',
     popcorned: this.popcorned || [],
     matched: this.matched || [],
-    location: this.location || {},
+    profilePicture: this.profilePicture || '',
+    location: this.location || {}
   };
 };
 

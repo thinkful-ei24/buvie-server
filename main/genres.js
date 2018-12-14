@@ -8,6 +8,8 @@ const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
 const uniqid = require('uniqid');
 const socket = require('socket.io');
+const fetch = require('node-fetch');
+const { CLOUDINARY_BASE_URL, CLOUDINARY_UPLOAD_PRESET } = require('../config');
 
 router.put('/popcorn', jsonParser, (req, res, next) => {
   const popcornerId = req.user.id;
@@ -66,7 +68,8 @@ router.put('/popcorn', jsonParser, (req, res, next) => {
             User.findOneAndUpdate(
               { _id: popcornerId },
               { $push: { whoUserPopcorned: popcornedId } },
-              { new: true })
+              { new: true }
+            )
           ]);
         }
       })
@@ -227,10 +230,12 @@ router.get('/', (req, res, next) => {
       }
 
       for (let id in userIdDictionary) {
-        if (id !== req.user.id
-          && !_user.matched.find(userId => userId._id._id.toString() === id)
-          && !_user.ignored.find(userId => userId.toString() === id)
-          && !_user.whoUserPopcorned.find(userId => userId.toString() === id)) {
+        if (
+          id !== req.user.id &&
+					!_user.matched.find(userId => userId._id._id.toString() === id) &&
+					!_user.ignored.find(userId => userId.toString() === id) &&
+					!_user.whoUserPopcorned.find(userId => userId.toString() === id)
+        ) {
           ourMatches.push({ id, count: userIdDictionary[id] });
         }
       }
@@ -253,7 +258,9 @@ router.get('/', (req, res, next) => {
       let serializedUser = users.map(user => user.serialize());
       let response = [];
       for (let i = 0; i < sortedIds.length; i++) {
-        let currentUser = serializedUser.find(user => user.id.toString() === sortedIds[i]);
+        let currentUser = serializedUser.find(
+          user => user.id.toString() === sortedIds[i]
+        );
         if (currentUser) {
           response.push(currentUser);
         }
@@ -311,15 +318,46 @@ router.get('/matches/:id', (req, res, next) => {
     .catch(err => next(err));
 });
 
-//NOTIFICATIONS
-router.get('/notifications/:id', (req, res, next) => {
+
+//NICK PROFILE PICTURE STUFF
+
+router.get('/profilePicture/:id', (req, res, next) => {
   let { id } = req.params;
 
-  if (req.user.id !== id) {
+  User.findOne({ _id: id }, { profilePicture: 1 })
+    .then(user => {
+      res.json(user);
+    })
+    .catch(err => next(err));
+});
+
+router.post('/profilePicture/:id', jsonParser, (req, res, next) => {
+  let { id } = req.params;
+  let form = req.body;
+
+   if (req.user.id !== id) {
     let err = new Error('Hold up sir that is not your id');
     err.status = 401;
     return next(err);
   }
+  
+  let { profilePic } = req.body;
+
+  User.findOneAndUpdate(
+    { _id: id },
+    { profilePicture: profilePic },
+    { new: true }
+  )
+    .then(user => {
+      res.status(201).json(user);
+    })
+    .catch(err => console.log(err));
+});
+  
+//NOTIFICATIONS
+router.get('/notifications/:id', (req, res, next) => {
+  let { id } = req.params;
+
 
   User.findOne({ _id: id }, { notifications: 1, notificationCheck: 1 })
     .populate({ path: 'notifications._id', select: 'username' })
@@ -375,5 +413,4 @@ router.put('/location/:id', jsonParser, (req, res, next) => {
     .then((user) => res.json(user))
     .catch(err => next(err));
 })
-
 module.exports = { router };

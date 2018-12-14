@@ -4,6 +4,17 @@ const mongoose = require('mongoose');
 
 mongoose.Promise = global.Promise;
 
+const GeoSchema = mongoose.Schema({
+  type: {
+    type: String,
+    default: 'Point'
+  },
+  coordinates: {
+    type: [Number],
+    index: '2dsphere'
+  }
+});
+
 const UserSchema = mongoose.Schema({
   username: {
     type: String,
@@ -30,6 +41,7 @@ const UserSchema = mongoose.Schema({
     type: Object,
     default: {}
   },
+  geometry: GeoSchema,
   movies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Movie' }],
   popcorned: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   matched: [

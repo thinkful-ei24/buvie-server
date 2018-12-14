@@ -155,7 +155,8 @@ router.get("/:id", (req, res) => {
 		res.json({
 			username: user.username,
 			movies: user.movies,
-			genres: user.genres
+			genres: user.genres,
+			location: user.location
 		})
 	);
 });

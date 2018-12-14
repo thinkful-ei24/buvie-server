@@ -15,7 +15,7 @@ MovieSchema.methods.serialize = function() {
     title: this.title || '',
     genre: this.genre || '',
     poster: this.poster || '',
-    omdbId: this.omdbId || ''
+    imdbId: this.omdbId || ''
   };
 };
 

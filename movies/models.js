@@ -6,7 +6,7 @@ const MovieSchema = mongoose.Schema({
   genre: String,
   poster: String,
   users: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  omdbId: String
+  imdbID: String
 });
 
 MovieSchema.methods.serialize = function() {
@@ -15,7 +15,7 @@ MovieSchema.methods.serialize = function() {
     title: this.title || '',
     genre: this.genre || '',
     poster: this.poster || '',
-    imdbId: this.omdbId || ''
+    imdbID: this.imdbID || ''
   };
 };
 

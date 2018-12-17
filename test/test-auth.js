@@ -3,6 +3,7 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 
 const { app, runServer, closeServer } = require('../server');
 const { User } = require('../users');
@@ -18,30 +19,34 @@ chai.use(chaiHttp);
 describe('Auth endpoints', function () {
   const username = 'exampleUser';
   const password = 'examplePass';
-  const firstName = 'Example';
-  const lastName = 'User';
+  const email = 'example@example.com';
+  let id;
 
   before(function () {
-    return runServer(TEST_DATABASE_URL);
+    return mongoose.connect(TEST_DATABASE_URL)
+      .then(() => mongoose.connection.db.dropDatabase());
   });
 
   after(function () {
-    return closeServer();
+    return mongoose.disconnect();
   });
 
   beforeEach(function () {
-    return User.hashPassword(password).then(password =>
-      User.create({
-        username,
-        password,
-        firstName,
-        lastName
+    return User.hashPassword(password)
+      .then(password => {
+        return User.create({
+          username,
+          password,
+          email
+        });
       })
-    );
+      .then((user) => {
+        id = user._id;
+      });
   });
 
   afterEach(function () {
-    return User.remove({});
+    return mongoose.connection.db.dropDatabase();
   });
 
   describe('/api/auth/login', function () {
@@ -49,15 +54,7 @@ describe('Auth endpoints', function () {
       return chai
         .request(app)
         .post('/api/auth/login')
-        .then(() =>
-          expect.fail(null, null, 'Request should not succeed')
-        )
-        .catch(err => {
-          if (err instanceof chai.AssertionError) {
-            throw err;
-          }
-
-          const res = err.response;
+        .then((res) => {
           expect(res).to.have.status(400);
         });
     });
@@ -66,15 +63,7 @@ describe('Auth endpoints', function () {
         .request(app)
         .post('/api/auth/login')
         .send({ username: 'wrongUsername', password })
-        .then(() =>
-          expect.fail(null, null, 'Request should not succeed')
-        )
-        .catch(err => {
-          if (err instanceof chai.AssertionError) {
-            throw err;
-          }
-
-          const res = err.response;
+        .then((res) => {
           expect(res).to.have.status(401);
         });
     });
@@ -83,15 +72,7 @@ describe('Auth endpoints', function () {
         .request(app)
         .post('/api/auth/login')
         .send({ username, password: 'wrongPassword' })
-        .then(() =>
-          expect.fail(null, null, 'Request should not succeed')
-        )
-        .catch(err => {
-          if (err instanceof chai.AssertionError) {
-            throw err;
-          }
-
-          const res = err.response;
+        .then((res) => {
           expect(res).to.have.status(401);
         });
     });
@@ -108,11 +89,10 @@ describe('Auth endpoints', function () {
           const payload = jwt.verify(token, JWT_SECRET, {
             algorithm: ['HS256']
           });
-          expect(payload.user).to.deep.equal({
-            username,
-            firstName,
-            lastName
-          });
+          expect(payload.user).to.include.all.keys(
+            'username',
+            'email'
+          );
         });
     });
   });
@@ -122,15 +102,7 @@ describe('Auth endpoints', function () {
       return chai
         .request(app)
         .post('/api/auth/refresh')
-        .then(() =>
-          expect.fail(null, null, 'Request should not succeed')
-        )
-        .catch(err => {
-          if (err instanceof chai.AssertionError) {
-            throw err;
-          }
-
-          const res = err.response;
+        .then((res) => {
           expect(res).to.have.status(401);
         });
     });
@@ -138,8 +110,7 @@ describe('Auth endpoints', function () {
       const token = jwt.sign(
         {
           username,
-          firstName,
-          lastName
+          email
         },
         'wrongSecret',
         {
@@ -152,15 +123,7 @@ describe('Auth endpoints', function () {
         .request(app)
         .post('/api/auth/refresh')
         .set('Authorization', `Bearer ${token}`)
-        .then(() =>
-          expect.fail(null, null, 'Request should not succeed')
-        )
-        .catch(err => {
-          if (err instanceof chai.AssertionError) {
-            throw err;
-          }
-
-          const res = err.response;
+        .then((res) => {
           expect(res).to.have.status(401);
         });
     });
@@ -169,31 +132,23 @@ describe('Auth endpoints', function () {
         {
           user: {
             username,
-            firstName,
-            lastName
+            email,
+            id
           },
         },
         JWT_SECRET,
         {
           algorithm: 'HS256',
           subject: username,
-          expiresIn: Math.floor(Date.now() / 1000) - 10 // Expired ten seconds ago
+          expiresIn: -10 // Expired 100 seconds ago
         }
       );
 
       return chai
         .request(app)
         .post('/api/auth/refresh')
-        .set('authorization', `Bearer ${token}`)
-        .then(() =>
-          expect.fail(null, null, 'Request should not succeed')
-        )
-        .catch(err => {
-          if (err instanceof chai.AssertionError) {
-            throw err;
-          }
-
-          const res = err.response;
+        .set('Authorization', `Bearer ${token}`)
+        .then((res) => {
           expect(res).to.have.status(401);
         });
     });
@@ -202,8 +157,8 @@ describe('Auth endpoints', function () {
         {
           user: {
             username,
-            firstName,
-            lastName
+            email,
+            id
           }
         },
         JWT_SECRET,
@@ -218,7 +173,7 @@ describe('Auth endpoints', function () {
       return chai
         .request(app)
         .post('/api/auth/refresh')
-        .set('authorization', `Bearer ${token}`)
+        .set('Authorization', `Bearer ${token}`)
         .then(res => {
           expect(res).to.have.status(200);
           expect(res.body).to.be.an('object');
@@ -227,11 +182,10 @@ describe('Auth endpoints', function () {
           const payload = jwt.verify(token, JWT_SECRET, {
             algorithm: ['HS256']
           });
-          expect(payload.user).to.deep.equal({
-            username,
-            firstName,
-            lastName
-          });
+          expect(payload.user).to.include.keys(
+            'username',
+            'email'
+          );
           expect(payload.exp).to.be.at.least(decoded.exp);
         });
     });

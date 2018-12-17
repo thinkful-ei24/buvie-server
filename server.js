@@ -23,6 +23,7 @@ const {
 } = require('./auth');
 const { router: moviesRouter } = require('./movies');
 const { router: genresRouter } = require('./main/genres');
+const { router: popcornRouter } = require('./main/popcorn');
 const { router: messagesRouter } = require('./conversation/router');
 
 mongoose.Promise = global.Promise;
@@ -59,6 +60,9 @@ passport.deserializeUser((user, done) => {
 });
 
 //MOUNT ROUTERS
+
+app.use('/api/main/popcorn', jwtAuth);
+app.use('/api/main/popcorn', popcornRouter);
 
 app.use('/api/main', jwtAuth);
 app.use('/api/main', genresRouter);

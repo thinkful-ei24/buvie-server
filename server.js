@@ -66,25 +66,14 @@ passport.deserializeUser((user, done) => {
 
 //MOUNT ROUTERS
 
-app.use('/api/main/popcorn', jwtAuth);
+app.use('/api/main', jwtAuth);
 app.use('/api/main/popcorn', popcornRouter);
-
-app.use('/api/main/notifications', jwtAuth);
 app.use('/api/main/notifications', notificationRouter);
-
-app.use('/api/main/matches', jwtAuth);
 app.use('/api/main/matches', matchRouter);
-
-app.use('/api/main/ignore', jwtAuth);
 app.use('/api/main/ignore', ignoreRouter);
-
-app.use('/api/main/location', jwtAuth);
 app.use('/api/main/location', locationRouter);
-
-app.use('/api/main/profilePicture', jwtAuth);
 app.use('/api/main/profilePicture', profilePicRouter);
 
-app.use('/api/main', jwtAuth);
 app.use('/api/main', genresRouter);
 app.use('/api/users/', usersRouter);
 

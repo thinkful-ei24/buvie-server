@@ -63,22 +63,22 @@ router.put('/nevermind/:id', jsonParser, (req, res, next) => {
 
 // updates the time user last checked notification so client side knows which
 // notifications are new
-router.put('/notificationtime/:id', (req, res, next) => {
-  let { id } = req.params;
+// router.put('/notificationtime/:id', (req, res, next) => {
+//   let { id } = req.params;
 
-  if (req.user.id !== id) {
-    let err = new Error('Hold up sir that is not your id');
-    err.status = 401;
-    next(err);
-  }
+//   if (req.user.id !== id) {
+//     let err = new Error('Hold up sir that is not your id');
+//     err.status = 401;
+//     next(err);
+//   }
 
-  User.findOneAndUpdate({ _id: id }, { notificationCheck: Date.now() }, { new: true })
-    .then((user) => {
-      const { notificationCheck } = user;
-      res.json(notificationCheck);
-    })
-    .catch(err => next(err));
-});
+//   User.findOneAndUpdate({ _id: id }, { notificationCheck: Date.now() }, { new: true })
+//     .then((user) => {
+//       const { notificationCheck } = user;
+//       res.json(notificationCheck);
+//     })
+//     .catch(err => next(err));
+// });
 
 router.put('/:id', jsonParser, (req, res, next) => {
   let { id } = req.params;
@@ -204,26 +204,6 @@ router.get('/', (req, res, next) => {
     });
 });
 
-router.get('/matches/:id', (req, res, next) => {
-  let { id } = req.params;
-
-  if (req.user.id !== id) {
-    let err = new Error('Hold up sir that is not your id');
-    err.status = 401;
-    return next(err);
-  }
-
-  User.findOne({ _id: id }, { matches: 1 })
-    .populate({ path: 'matched._id', select: 'username' })
-    .populate({ path: 'matched.chatroom', select: '_id' })
-
-    .then(matches => {
-      res.status(200).json(matches);
-    })
-    .catch(err => next(err));
-});
-
-
 //NICK PROFILE PICTURE STUFF
 
 router.get('/profilePicture/:id', (req, res, next) => {
@@ -260,33 +240,33 @@ router.post('/profilePicture/:id', jsonParser, (req, res, next) => {
 });
   
 //NOTIFICATIONS
-router.get('/notifications/:id', (req, res, next) => {
-  let { id } = req.params;
+// router.get('/notifications/:id', (req, res, next) => {
+//   let { id } = req.params;
 
 
-  User.findOne({ _id: id }, { notifications: 1, notificationCheck: 1 })
-    .populate({ path: 'notifications._id', select: 'username' })
-    .then(response => {
-      const notifications = response.notifications.map(note => {
-        let message;
-        if (note.notificationType === 'popcorn') {
-          message = `${note._id.username} has popcorned you!`;
-        } else if (note.notificationType === 're-popcorn') {
-          message = `${note._id.username} had popcorned you again! Please respond!`;
-        } else if (note.notificationType === 'matched') {
-          message = `You've matched with ${note._id.username}! Start a conversation!`;
-        }
-        return ({
-          _id: note._id._id,
-          message,
-          date: note.date,
-          type: note.notificationType
-        });
-      });
-      res.json({ notifications, notificationCheck: response.notificationCheck });
-    })
-    .catch(err => next(err));
-});
+//   User.findOne({ _id: id }, { notifications: 1, notificationCheck: 1 })
+//     .populate({ path: 'notifications._id', select: 'username' })
+//     .then(response => {
+//       const notifications = response.notifications.map(note => {
+//         let message;
+//         if (note.notificationType === 'popcorn') {
+//           message = `${note._id.username} has popcorned you!`;
+//         } else if (note.notificationType === 're-popcorn') {
+//           message = `${note._id.username} had popcorned you again! Please respond!`;
+//         } else if (note.notificationType === 'matched') {
+//           message = `You've matched with ${note._id.username}! Start a conversation!`;
+//         }
+//         return ({
+//           _id: note._id._id,
+//           message,
+//           date: note.date,
+//           type: note.notificationType
+//         });
+//       });
+//       res.json({ notifications, notificationCheck: response.notificationCheck });
+//     })
+//     .catch(err => next(err));
+// });
 
 //LOCATION OF USERS
 

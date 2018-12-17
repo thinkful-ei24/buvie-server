@@ -24,6 +24,8 @@ const {
 const { router: moviesRouter } = require('./movies');
 const { router: genresRouter } = require('./main/genres');
 const { router: popcornRouter } = require('./main/popcorn');
+const { router: matchRouter } = require('./main/matches');
+const { router: notificationRouter } = require('./main/notifications');
 const { router: messagesRouter } = require('./conversation/router');
 
 mongoose.Promise = global.Promise;
@@ -63,6 +65,12 @@ passport.deserializeUser((user, done) => {
 
 app.use('/api/main/popcorn', jwtAuth);
 app.use('/api/main/popcorn', popcornRouter);
+
+app.use('/api/main/notifications', jwtAuth);
+app.use('/api/main/notifications', notificationRouter);
+
+app.use('/api/main/matches', jwtAuth);
+app.use('/api/main/matches', matchRouter);
 
 app.use('/api/main', jwtAuth);
 app.use('/api/main', genresRouter);

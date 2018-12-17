@@ -3,12 +3,9 @@ const express = require('express');
 const router = express.Router();
 const { User } = require('../users');
 const { Movie } = require('../movies');
-const { Conversation } = require('../conversation/models');
 const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
-const socket = require('socket.io');
-const fetch = require('node-fetch');
-const { CLOUDINARY_BASE_URL, CLOUDINARY_UPLOAD_PRESET } = require('../config');
+
 
 router.put('/:id', jsonParser, (req, res, next) => {
   let { id } = req.params;

@@ -22,6 +22,7 @@ router.put('/time/:id', (req, res, next) => {
     .catch(err => next(err));
 });
 
+// GETS user's notifications
 router.get('/:id', (req, res, next) => {
   let { id } = req.params;
 

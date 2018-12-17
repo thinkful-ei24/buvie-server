@@ -25,6 +25,7 @@ const { router: moviesRouter } = require('./movies');
 const { router: genresRouter } = require('./main/genres');
 const { router: popcornRouter } = require('./main/popcorn');
 const { router: matchRouter } = require('./main/matches');
+const { router: ignoreRouter } = require('./main/ignore');
 const { router: notificationRouter } = require('./main/notifications');
 const { router: messagesRouter } = require('./conversation/router');
 
@@ -71,6 +72,9 @@ app.use('/api/main/notifications', notificationRouter);
 
 app.use('/api/main/matches', jwtAuth);
 app.use('/api/main/matches', matchRouter);
+
+app.use('/api/main/ignore', jwtAuth);
+app.use('/api/main/ignore', ignoreRouter);
 
 app.use('/api/main', jwtAuth);
 app.use('/api/main', genresRouter);

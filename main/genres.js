@@ -10,76 +10,6 @@ const socket = require('socket.io');
 const fetch = require('node-fetch');
 const { CLOUDINARY_BASE_URL, CLOUDINARY_UPLOAD_PRESET } = require('../config');
 
-router.put('/ignore/:id', jsonParser, (req, res, next) => {
-  const id = req.user.id;
-  const ignored = req.body.userId;
-  User.findOne({ _id: id })
-    .then((user) => {
-      user.ignored = user.ignored.filter(userId => userId.toString() !== ignored);
-      user.ignored.push(ignored);
-      user.popcorned = user.popcorned.filter(userId => userId.toString() !== ignored);
-      user.notifications = user.notifications.filter(user => user._id.toString() !== ignored);
-      return User.findOneAndUpdate({ _id: id }, {
-        popcorned: user.popcorned,
-        ignored: user.ignored,
-        notifications: user.notifications
-      }, { new: true });
-    })
-    .then(() => {
-      return User.findOne({ _id: ignored });
-    })
-    .then((user) => {
-      user.whoUserPopcorned = user.whoUserPopcorned.filter(userId => userId.toString() !== id);
-      return User.findOneAndUpdate({ _id: ignored }, { whoUserPopcorned: user.whoUserPopcorned });
-    })
-    .then(() => res.sendStatus(204))
-    .catch(err => next(err));
-});
-
-router.put('/nevermind/:id', jsonParser, (req, res, next) => {
-  const id = req.user.id;
-  const ignored = req.body.userId;
-  User.findOne({ _id: ignored })
-    .then((user) => {
-      // get rid of all evidence of notifications and popcorned
-      user.popcorned = user.popcorned.filter(userId => userId.toString() !== id);
-      user.notifications = user.notifications.filter(user => user._id.toString() !== id);
-      return User.findOneAndUpdate({ _id: ignored }, {
-        popcorned: user.popcorned,
-        notifications: user.notifications
-      }, { new: true });
-    })
-    .then(() => {
-      return User.findOne({ _id: id });
-    })
-    .then((user) => {
-      // delete user from pending popcorns
-      user.whoUserPopcorned = user.whoUserPopcorned.filter(userId => userId.toString() !== ignored);
-      return User.findOneAndUpdate({ _id: id }, { whoUserPopcorned: user.whoUserPopcorned });
-    })
-    .then(() => res.sendStatus(204))
-    .catch(err => next(err));
-});
-
-// updates the time user last checked notification so client side knows which
-// notifications are new
-// router.put('/notificationtime/:id', (req, res, next) => {
-//   let { id } = req.params;
-
-//   if (req.user.id !== id) {
-//     let err = new Error('Hold up sir that is not your id');
-//     err.status = 401;
-//     next(err);
-//   }
-
-//   User.findOneAndUpdate({ _id: id }, { notificationCheck: Date.now() }, { new: true })
-//     .then((user) => {
-//       const { notificationCheck } = user;
-//       res.json(notificationCheck);
-//     })
-//     .catch(err => next(err));
-// });
-
 router.put('/:id', jsonParser, (req, res, next) => {
   let { id } = req.params;
   let updatedUser;
@@ -238,35 +168,6 @@ router.post('/profilePicture/:id', jsonParser, (req, res, next) => {
     })
     .catch(err => console.log(err));
 });
-  
-//NOTIFICATIONS
-// router.get('/notifications/:id', (req, res, next) => {
-//   let { id } = req.params;
-
-
-//   User.findOne({ _id: id }, { notifications: 1, notificationCheck: 1 })
-//     .populate({ path: 'notifications._id', select: 'username' })
-//     .then(response => {
-//       const notifications = response.notifications.map(note => {
-//         let message;
-//         if (note.notificationType === 'popcorn') {
-//           message = `${note._id.username} has popcorned you!`;
-//         } else if (note.notificationType === 're-popcorn') {
-//           message = `${note._id.username} had popcorned you again! Please respond!`;
-//         } else if (note.notificationType === 'matched') {
-//           message = `You've matched with ${note._id.username}! Start a conversation!`;
-//         }
-//         return ({
-//           _id: note._id._id,
-//           message,
-//           date: note.date,
-//           type: note.notificationType
-//         });
-//       });
-//       res.json({ notifications, notificationCheck: response.notificationCheck });
-//     })
-//     .catch(err => next(err));
-// });
 
 //LOCATION OF USERS
 

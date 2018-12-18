@@ -21,7 +21,9 @@ router.put('/:id', jsonParser, (req, res, next) => {
 
   if (genres) {
     if (genres.length > 3) {
-      genres = genres.slice(0, 3);
+      let err = new Error('Please only select 3 genres');
+      err.status = 400;
+      next(err);
     }
     if (!genres.length) {
       let err = new Error('Please select at least 1 genre');

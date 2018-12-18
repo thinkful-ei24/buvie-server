@@ -74,7 +74,7 @@ describe('Notification Endpoint', function () {
   });
 
   describe.only('/api/main/notifications', function () {
-    describe('GET api/main/notifications', function() {
+    describe('GET api/main/notifications', function () {
 
       it('Should reject requests with no credentials', function () {
         return chai
@@ -84,7 +84,7 @@ describe('Notification Endpoint', function () {
             expect(res).to.have.status(401);
           });
       });
-  
+
       it('Should reject requests with an invalid token', function () {
         const token = jwt.sign(
           {
@@ -98,7 +98,6 @@ describe('Notification Endpoint', function () {
             expiresIn: '7d'
           }
         );
-  
         return chai
           .request(app)
           .get(`/api/main/notifications/${user._id}`)
@@ -123,7 +122,7 @@ describe('Notification Endpoint', function () {
             subject: user.username
           }
         );
-  
+
         return chai
           .request(app)
           .get(`/api/main/notifications/${user._id}`)
@@ -147,7 +146,7 @@ describe('Notification Endpoint', function () {
             subject: user.username
           }
         );
-  
+
         return chai
           .request(app)
           .get(`/api/main/notifications/${user._id}`)
@@ -157,7 +156,7 @@ describe('Notification Endpoint', function () {
             expect(res.body.message).to.equal('Hold up sir that is not your id');
           });
       });
-      it('should return notifications', function() {
+      it('should return notifications', function () {
         return chai
           .request(app)
           .get(`/api/main/notifications/${user._id}`)
@@ -165,21 +164,55 @@ describe('Notification Endpoint', function () {
           .then((res) => {
             expect(res).to.have.status(200);
             expect(res.body).to.have.all.keys(
-              '_id',
-              'matched'
+              'notifications',
+              'notificationCheck'
             );
-            expect(res.body.matched).to.be.an('array');
-            res.body.matched.forEach(function(match) {
-              expect(match).to.include.all.keys(
+            expect(res.body.notifications).to.be.an('array');
+            res.body.notifications.forEach(function (notification) {
+              expect(notification).to.have.all.keys(
                 '_id',
-                'chatroom'
-              );
-              expect(match._id).to.be.an('object');
-              expect(match._id).to.include.all.keys(
-                '_id',
-                'username'
+                'message',
+                'date',
+                'type'
               );
             });
+          });
+      });
+    });
+    describe('PUT /api/notifications/time', function() {
+      it('Should reject requests with wrong id', function () {
+        const token = jwt.sign(
+          {
+            user: {
+              username: user.username,
+              email: user.email,
+              id: '000000000000000000000111'
+            }
+          },
+          JWT_SECRET,
+          {
+            algorithm: 'HS256',
+            subject: user.username
+          }
+        );
+
+        return chai
+          .request(app)
+          .put(`/api/main/notifications/time/${user._id}`)
+          .set('authorization', `Bearer ${token}`)
+          .then((res) => {
+            expect(res).to.have.status(401);
+            expect(res.body.message).to.equal('Hold up sir that is not your id');
+          });
+      });
+      it('should return notifications', function () {
+        return chai
+          .request(app)
+          .put(`/api/main/notifications/time/${user._id}`)
+          .set('Authorization', `Bearer ${token}`)
+          .then((res) => {
+            expect(res).to.have.status(200);
+            expect(res.body).to.be.a('string');
           });
       });
     });

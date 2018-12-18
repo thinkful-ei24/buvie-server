@@ -18,7 +18,7 @@ const expect = chai.expect;
 // see: https://github.com/chaijs/chai-http
 chai.use(chaiHttp);
 
-describe('Movie Endpoint', function () {
+describe('Conversation Endpoint', function () {
 
   let user;
   let token;
@@ -49,7 +49,7 @@ describe('Movie Endpoint', function () {
     return mongoose.connection.db.dropDatabase();
   });
 
-  describe.only('/api/messages', function () {
+  describe('/api/messages', function () {
     describe('GET /api/messages', function () {
       it('Should reject requests with no credentials', function () {
         return chai

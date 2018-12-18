@@ -76,7 +76,7 @@ describe('Matches Endpoint', function () {
     return mongoose.connection.db.dropDatabase();
   });
 
-  describe.only('/api/main/matches', function () {
+  describe('/api/main/matches', function () {
     it('Should reject requests with no credentials', function () {
       return chai
         .request(app)

@@ -17,7 +17,7 @@ const expect = chai.expect;
 // see: https://github.com/chaijs/chai-http
 chai.use(chaiHttp);
 
-describe.only('Movie Endpoint', function () {
+describe('Movie Endpoint', function () {
 
   let user;
   let token;
@@ -60,7 +60,8 @@ describe.only('Movie Endpoint', function () {
       const token = jwt.sign(
         {
           username: user.username,
-          email: user.email
+          email: user.email,
+          id: user._id
         },
         'wrongSecret',
         {
@@ -82,7 +83,8 @@ describe.only('Movie Endpoint', function () {
         {
           user: {
             username: user.username,
-            email: user.email
+            email: user.email,
+            id: user._id
           },
           exp: -10 // Expired ten seconds ago
         },

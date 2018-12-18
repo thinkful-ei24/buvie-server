@@ -40,14 +40,14 @@ router.put('/:id', jsonParser, (req, res, next) => {
   Conversation.findOne({ _id: id })
     .then((conversation) => {
       if (conversation.matched.find(user => user.toString() === userId)) {
-        return Conversation.findOneAndUpdate({ _id: id }, { messages }, { new: true });
+        return Conversation.findOneAndUpdate({ _id: id }, { messages }, { new: true })
+          .then(() => res.sendStatus(204));
       } else {
         let err = new Error("You do not have access to this conversation");
         err.status = 401;
-        next(err);
+        return next(err);
       }
     })
-    .then(() => res.sendStatus(204))
     .catch(err => next(err));
 });
 

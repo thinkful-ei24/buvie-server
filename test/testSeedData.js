@@ -19,6 +19,25 @@ const users = [
   }
 ];
 
+const conversations = [
+  {
+    _id: '222222222222222222222201',
+    matched: ['000000000000000000000002', '000000000000000000000001'],
+    messages: [
+      {
+        message: 'hello',
+        handle: 'username',
+        room: '222222222222222222222201'
+      },
+      {
+        message: 'hey',
+        handle: 'usernameB',
+        room: '222222222222222222222201'
+      }
+    ]
+  }
+]
+
 const movies = [
   {
     _id: '333333333333333333333301',
@@ -382,4 +401,4 @@ const movies = [
   }
 ];
 
-module.exports = { users, movies };
+module.exports = { users, movies, conversations };

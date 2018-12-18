@@ -5,7 +5,7 @@ const chaiHttp = require('chai-http');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 
-const { app, runServer, closeServer } = require('../server');
+const { app } = require('../server');
 const { User } = require('../users');
 const { JWT_SECRET, TEST_DATABASE_URL } = require('../config');
 

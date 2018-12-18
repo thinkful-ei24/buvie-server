@@ -3,8 +3,9 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 
-const { app, runServer, closeServer } = require('../server');
+const { app } = require('../server');
 const { User } = require('../users');
 const { JWT_SECRET, TEST_DATABASE_URL } = require('../config');
 
@@ -15,18 +16,18 @@ const expect = chai.expect;
 // see: https://github.com/chaijs/chai-http
 chai.use(chaiHttp);
 
-describe('Protected endpoint', function () {
+describe('Main Endpoint', function () {
   const username = 'exampleUser';
   const password = 'examplePass';
-  const firstName = 'Example';
-  const lastName = 'User';
+  const email = 'example@email.com';
 
   before(function () {
-    return runServer(TEST_DATABASE_URL);
+    return mongoose.connect(TEST_DATABASE_URL)
+      .then(() => mongoose.connection.db.dropDatabase());
   });
 
   after(function () {
-    return closeServer();
+    return mongoose.disconnect();
   });
 
   beforeEach(function () {
@@ -34,31 +35,22 @@ describe('Protected endpoint', function () {
       User.create({
         username,
         password,
-        firstName,
-        lastName
+        email
       })
     );
   });
 
   afterEach(function () {
-    return User.remove({});
+    return mongoose.connection.db.dropDatabase();
   });
 
-  describe('/api/protected', function () {
+  describe.only('/api/main', function () {
     it('Should reject requests with no credentials', function () {
       return chai
         .request(app)
-        .get('/api/protected')
-        .then(() =>
-          expect.fail(null, null, 'Request should not succeed')
-        )
-        .catch(err => {
-          if (err instanceof chai.AssertionError) {
-            throw err;
-          }
-
-          const res = err.response;
-          expect(res).to.have.status(401);
+        .get('/api/main')
+        .then((res) => {
+          expect(res).to.have.status(401);  
         });
     });
 

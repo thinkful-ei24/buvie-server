@@ -4,7 +4,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const mongoose = require('mongoose');
 
-const { app, runServer, closeServer } = require('../server');
+const { app } = require('../server');
 const { User } = require('../users');
 const { TEST_DATABASE_URL } = require('../config');
 

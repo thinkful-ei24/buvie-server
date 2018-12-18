@@ -12,7 +12,7 @@ const { JWT_SECRET, TEST_DATABASE_URL } = require('../config');
 const { users, movies } = require('./testSeedData');
 const expect = chai.expect;
 
-// This let's us make HTTP requests
+// This lets us make HTTP requests
 // in our tests.
 // see: https://github.com/chaijs/chai-http
 chai.use(chaiHttp);
@@ -46,7 +46,7 @@ describe('Main Endpoint', function () {
     return mongoose.connection.db.dropDatabase();
   });
 
-  describe.only('/api/main', function () {
+  describe('/api/main', function () {
     describe('GET /api/main', function() {
 
       it('Should reject requests with no credentials', function () {

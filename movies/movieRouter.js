@@ -9,7 +9,7 @@ const router = express.Router();
 
 const jsonParser = bodyParser.json();
 
-// POST genres to get back movie list
+// GET movie list based on user's genres
 router.get("/", jsonParser, (req, res, next) => {
 	const { id } = req.user;
 	User.findOne({ _id: id })

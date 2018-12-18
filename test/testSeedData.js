@@ -6,6 +6,7 @@ const users = [
     username: 'username',
     password: '$2a$10$uNEZkpZM//OlVuNuiJFLEebBwYVB.J9N3BXixK79DCPPfKi4Wjoqq',
     email: 'example@email.com',
+    genres: ['Horror', 'Action & Adventure', 'Comedy'],
     movies: ['333333333333333333333301', '333333333333333333333305', '333333333333333333333311']
   },
   {
@@ -13,6 +14,7 @@ const users = [
     username: 'usernameB',
     password: '$2a$10$uNEZkpZM//OlVuNuiJFLEebBwYVB.J9N3BXixK79DCPPfKi4Wjoqq',
     email: 'exampleB@email.com',
+    genres: ['Horror', 'Action & Adventure', 'Comedy'],
     movies: ['333333333333333333333302', '333333333333333333333305', '333333333333333333333310']
   }
 ];

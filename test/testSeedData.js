@@ -5,13 +5,15 @@ const users = [
     _id: '000000000000000000000001',
     username: 'username',
     password: '$2a$10$uNEZkpZM//OlVuNuiJFLEebBwYVB.J9N3BXixK79DCPPfKi4Wjoqq',
-    email: 'example@email.com'
+    email: 'example@email.com',
+    movies: ['333333333333333333333301', '333333333333333333333305', '333333333333333333333311']
   },
   {
     _id: '000000000000000000000002',
     username: 'usernameB',
     password: '$2a$10$uNEZkpZM//OlVuNuiJFLEebBwYVB.J9N3BXixK79DCPPfKi4Wjoqq',
-    email: 'exampleB@email.com'
+    email: 'exampleB@email.com',
+    movies: ['333333333333333333333302', '333333333333333333333305', '333333333333333333333310']
   }
 ];
 
@@ -21,7 +23,7 @@ const movies = [
     title: 'Get Out (2017)',
     genre: 'Horror',
     poster: 'https://m.media-amazon.com/images/M/MV5BMjUxMDQwNjcyNl5BMl5BanBnXkFtZTgwNzcwMzc0MTI@._V1_SX300.jpg',
-		users: [],
+		users: ['000000000000000000000001'],
 		imdbID: 'tt5052448'
   },
   {
@@ -29,7 +31,7 @@ const movies = [
     title: 'The Exorcist (1973)',
     genre: 'Horror',
     poster: 'https://m.media-amazon.com/images/M/MV5BYjhmMGMxZDYtMTkyNy00YWVmLTgyYmUtYTU3ZjcwNTBjN2I1XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg',
-		users: [],
+		users: ['000000000000000000000002'],
 		imdbID: 'tt0070047'
   },
   {
@@ -53,7 +55,7 @@ const movies = [
     title: 'The Silence of the Lambs (1991)',
     genre: 'Horror',
     poster: 'https://m.media-amazon.com/images/M/MV5BNjNhZTk0ZmEtNjJhMi00YzFlLWE1MmEtYzM1M2ZmMGMwMTU4XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg',
-		users: [],
+		users: ['000000000000000000000001', '000000000000000000000002'],
 		imdbID: 'tt0102926'
   },
   {
@@ -93,7 +95,7 @@ const movies = [
     title: 'Jaws (1975)',
     genre: 'Action & Adventure',
     poster: 'https://m.media-amazon.com/images/M/MV5BMmVmODY1MzEtYTMwZC00MzNhLWFkNDMtZjAwM2EwODUxZTA5XkEyXkFqcGdeQXVyNTAyODkwOQ@@._V1_SX300.jpg',
-		users: [],
+		users: ['000000000000000000000002'],
 		imdbID: 'tt0073195' 
   },
   {
@@ -101,7 +103,7 @@ const movies = [
     title: 'The Philadelphia Story (1940)',
     genre: 'Comedy',
     poster: 'https://m.media-amazon.com/images/M/MV5BYjQ4ZDA4NGMtMTkwYi00NThiLThhZDUtZTEzNTAxOWYyY2E4XkEyXkFqcGdeQXVyMjUxODE0MDY@._V1_SX300.jpg',
-		users: [],
+		users: ['000000000000000000000001'],
 		imdbID: 'tt0032904'
   },
   {

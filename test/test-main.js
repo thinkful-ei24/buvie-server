@@ -7,8 +7,9 @@ const mongoose = require('mongoose');
 
 const { app } = require('../server');
 const { User } = require('../users');
+const { Movie } = require('../movies/models');
 const { JWT_SECRET, TEST_DATABASE_URL } = require('../config');
-
+const { users, movies } = require('./testSeedData');
 const expect = chai.expect;
 
 // This let's us make HTTP requests
@@ -17,9 +18,9 @@ const expect = chai.expect;
 chai.use(chaiHttp);
 
 describe('Main Endpoint', function () {
-  const username = 'exampleUser';
-  const password = 'examplePass';
-  const email = 'example@email.com';
+
+  let user;
+  let token;
 
   before(function () {
     return mongoose.connect(TEST_DATABASE_URL)
@@ -31,13 +32,14 @@ describe('Main Endpoint', function () {
   });
 
   beforeEach(function () {
-    return User.hashPassword(password).then(password =>
-      User.create({
-        username,
-        password,
-        email
-      })
-    );
+    return Promise.all([
+      User.insertMany(users),
+      Movie.insertMany(movies)
+    ])
+      .then(([users]) => {
+        user = users[0];
+        token = jwt.sign({ user: { username: user.username, id: user._id, email: user.email } }, JWT_SECRET, {subject: user.username});
+      });
   });
 
   afterEach(function () {
@@ -50,16 +52,15 @@ describe('Main Endpoint', function () {
         .request(app)
         .get('/api/main')
         .then((res) => {
-          expect(res).to.have.status(401);  
+          expect(res).to.have.status(401);
         });
     });
 
     it('Should reject requests with an invalid token', function () {
       const token = jwt.sign(
         {
-          username,
-          firstName,
-          lastName
+          username: user.username,
+          email: user.email
         },
         'wrongSecret',
         {
@@ -70,17 +71,9 @@ describe('Main Endpoint', function () {
 
       return chai
         .request(app)
-        .get('/api/protected')
+        .get('/api/main')
         .set('Authorization', `Bearer ${token}`)
-        .then(() =>
-          expect.fail(null, null, 'Request should not succeed')
-        )
-        .catch(err => {
-          if (err instanceof chai.AssertionError) {
-            throw err;
-          }
-
-          const res = err.response;
+        .then((res) => {
           expect(res).to.have.status(401);
         });
     });
@@ -88,60 +81,52 @@ describe('Main Endpoint', function () {
       const token = jwt.sign(
         {
           user: {
-            username,
-            firstName,
-            lastName
+            username: user.username,
+            email: user.email
           },
-          exp: Math.floor(Date.now() / 1000) - 10 // Expired ten seconds ago
+          exp: -10 // Expired ten seconds ago
         },
         JWT_SECRET,
         {
           algorithm: 'HS256',
-          subject: username
+          subject: user.username
         }
       );
 
       return chai
         .request(app)
-        .get('/api/protected')
+        .get('/api/main')
         .set('authorization', `Bearer ${token}`)
-        .then(() =>
-          expect.fail(null, null, 'Request should not succeed')
-        )
-        .catch(err => {
-          if (err instanceof chai.AssertionError) {
-            throw err;
-          }
-
-          const res = err.response;
+        .then((res) => {
           expect(res).to.have.status(401);
         });
     });
-    it('Should send protected data', function () {
-      const token = jwt.sign(
-        {
-          user: {
-            username,
-            firstName,
-            lastName
-          }
-        },
-        JWT_SECRET,
-        {
-          algorithm: 'HS256',
-          subject: username,
-          expiresIn: '7d'
-        }
-      );
-
+    it('Should send matched users', function () {
       return chai
         .request(app)
-        .get('/api/protected')
-        .set('authorization', `Bearer ${token}`)
+        .get('/api/main')
+        .set('Authorization', `Bearer ${token}`)
         .then(res => {
           expect(res).to.have.status(200);
-          expect(res.body).to.be.an('object');
-          expect(res.body.data).to.equal('rosebud');
+          expect(res.body).to.be.an('array');
+          expect(res.body).to.have.lengthOf(1);
+          res.body.forEach(function (user) {
+            expect(user).to.be.an('object');
+            expect(user).to.include.all.keys(
+              'username',
+              'movies',
+              'genres'
+            );
+            expect(user.movies).to.be.an('array');
+            expect(user.movies).to.have.lengthOf(3);
+            user.movies.forEach(function (movie) {
+              expect(movie).to.include.all.keys(
+                'title',
+                'poster',
+                'imdbID'
+              );
+            });
+          });
         });
     });
   });

@@ -15,7 +15,7 @@ const expect = chai.expect;
 // see: https://github.com/chaijs/chai-http
 chai.use(chaiHttp);
 
-describe.only('/api/user', function () {
+describe('/api/user', function () {
   const username = 'exampleUser';
   const password = 'examplePass';
   const email = 'example@email.com';
@@ -297,18 +297,12 @@ describe.only('/api/user', function () {
             expect(res).to.have.status(200);
             expect(res.body).to.be.an('array');
             expect(res.body).to.have.length(2);
-            expect(res.body[0]).to.include.keys(
-              'username',
-              'email'
-            );
-            expect(res.body[1]).to.include.keys(
-              'username',
-              'email'
-            );
-            expect(res.body[0].username).to.equal(username);
-            expect(res.body[0].email).to.equal(email);
-            expect(res.body[1].username).to.equal(usernameB);
-            expect(res.body[1].email).to.equal(emailB);
+            res.body.forEach(function (user) {
+              expect(user).to.include.keys(
+                'username',
+                'email'
+              );
+            });
           });
       });
     });

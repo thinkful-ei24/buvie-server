@@ -41,13 +41,25 @@ const users = [
       notificationType: 'popcorn',
       date: Date.now()
     }]
+  },
+  {
+    _id: '000000000000000000000003',
+    username: 'usernameC',
+    password: '$2a$10$uNEZkpZM//OlVuNuiJFLEebBwYVB.J9N3BXixK79DCPPfKi4Wjoqq',
+    email: 'exampleC@email.com',
+    genres: ['Horror', 'Action & Adventure', 'Comedy'],
+    movies: ['333333333333333333333302', '333333333333333333333305', '333333333333333333333312']
   }
 ];
 
-describe('Notification Endpoint', function () {
+describe('Popcorn Endpoint', function () {
 
   let user;
   let token;
+  let userB;
+  let tokenB;
+  let userC;
+  let tokenC;
 
   before(function () {
     return mongoose.connect(TEST_DATABASE_URL)
@@ -64,8 +76,12 @@ describe('Notification Endpoint', function () {
       Movie.insertMany(movies)
     ])
       .then(([users]) => {
-        user = users.find(user => user.username === 'usernameB');
+        user = users.find(user => user.username === 'username');
         token = jwt.sign({ user: { username: user.username, id: user._id, email: user.email } }, JWT_SECRET, { subject: user.username });
+        userB = users.find(user => user.username === 'usernameB');
+        tokenB = jwt.sign({ user: { username: userB.username, id: userB._id, email: userB.email } }, JWT_SECRET, { subject: userB.username });
+        userC = users.find(user => user.username === 'usernameC');
+        tokenC = jwt.sign({ user: { username: userC.username, id: userC._id, email: userC.email } }, JWT_SECRET, { subject: userC.username });
       });
   });
 
@@ -73,13 +89,13 @@ describe('Notification Endpoint', function () {
     return mongoose.connection.db.dropDatabase();
   });
 
-  describe('/api/main/notifications', function () {
-    describe('GET api/main/notifications', function () {
+  describe.only('/api/main/popcorn', function () {
+    describe('GET api/main/popcorn', function () {
 
       it('Should reject requests with no credentials', function () {
         return chai
           .request(app)
-          .get(`/api/main/notifications/${user._id}`)
+          .get(`/api/main/popcorn/${user._id}`)
           .then((res) => {
             expect(res).to.have.status(401);
           });
@@ -100,7 +116,7 @@ describe('Notification Endpoint', function () {
         );
         return chai
           .request(app)
-          .get(`/api/main/notifications/${user._id}`)
+          .get(`/api/main/popcorn/${user._id}`)
           .set('Authorization', `Bearer ${token}`)
           .then((res) => {
             expect(res).to.have.status(401);
@@ -125,7 +141,7 @@ describe('Notification Endpoint', function () {
 
         return chai
           .request(app)
-          .get(`/api/main/notifications/${user._id}`)
+          .get(`/api/main/popcorn/${user._id}`)
           .set('authorization', `Bearer ${token}`)
           .then((res) => {
             expect(res).to.have.status(401);
@@ -149,70 +165,83 @@ describe('Notification Endpoint', function () {
 
         return chai
           .request(app)
-          .get(`/api/main/notifications/${user._id}`)
+          .get(`/api/main/popcorn/${user._id}`)
           .set('authorization', `Bearer ${token}`)
           .then((res) => {
             expect(res).to.have.status(401);
             expect(res.body.message).to.equal('Hold up sir that is not your id');
           });
       });
-      it('should return notifications', function () {
+      it('should return popcorns', function () {
         return chai
           .request(app)
-          .get(`/api/main/notifications/${user._id}`)
-          .set('Authorization', `Bearer ${token}`)
+          .get(`/api/main/popcorn/${userB._id}`)
+          .set('Authorization', `Bearer ${tokenB}`)
           .then((res) => {
             expect(res).to.have.status(200);
-            expect(res.body).to.have.all.keys(
-              'notifications',
-              'notificationCheck'
-            );
-            expect(res.body.notifications).to.be.an('array');
-            res.body.notifications.forEach(function (notification) {
-              expect(notification).to.have.all.keys(
+            expect(res.body).to.be.an('object');
+            expect(res.body.popcorned).to.have.lengthOf(1);
+            res.body.popcorned.forEach(function(poppedUser ) {
+              expect(poppedUser).to.have.all.keys(
                 '_id',
-                'message',
-                'date',
-                'type'
+                'username'
               );
             });
+            expect(res.body.popcorned[0]._id).to.equal('000000000000000000000001');
+            expect(res.body.popcorned[0].username).to.equal('username');
+            expect(res.body.pendingPopcorn).to.deep.equal([]);
           });
       });
     });
-    describe('PUT /api/notifications/time', function() {
-      it('Should reject requests with wrong id', function () {
-        const token = jwt.sign(
-          {
-            user: {
-              username: user.username,
-              email: user.email,
-              id: '000000000000000000000111'
-            }
-          },
-          JWT_SECRET,
-          {
-            algorithm: 'HS256',
-            subject: user.username
-          }
-        );
-
+    describe('PUT /api/popcorn', function() {
+      it('should add popcorn if new popcorn', function () {
+        const body = {
+          userId: userC._id
+        };
         return chai
           .request(app)
-          .put(`/api/main/notifications/time/${user._id}`)
-          .set('authorization', `Bearer ${token}`)
+          .put('/api/main/popcorn')
+          .set('Authorization', `Bearer ${token}`)
+          .send(body)
           .then((res) => {
-            expect(res).to.have.status(401);
-            expect(res.body.message).to.equal('Hold up sir that is not your id');
+            expect(res).to.have.status(204);
+            return User.findOne({ _id: user._id });
+          })
+          .then((_user) => {
+            expect(_user.whoUserPopcorned).to.include(userC._id);
+            return User.findOne({ _id: userC._id });
+          })
+          .then((_user) => {
+            expect(_user.popcorned).to.include(user._id);
+            expect(_user.notifications.find(note => note._id.toString() === user._id.toString() && note.notificationType === 'popcorn')).to.exist;
           });
       });
-      it('should return time', function () {
+      it('should match if mutual popcorn', function () {
+        const body = {
+          userId: user._id
+        };
+        let matchedId;
         return chai
           .request(app)
-          .put(`/api/main/notifications/time/${user._id}`)
-          .set('Authorization', `Bearer ${token}`)
+          .put('/api/main/popcorn')
+          .set('Authorization', `Bearer ${tokenB}`)
+          .send(body)
           .then((res) => {
-            expect(res).to.have.status(200);
-            expect(res.body).to.be.a('string');
+            expect(res).to.have.status(204);
+            return User.findOne({ _id: user._id });
+          })
+          .then((_user) => {
+            console.log(_user);
+            expect(_user.whoUserPopcorned).to.not.include(userB._id);
+            expect(_user.matched.find(matchedUser => matchedUser._id.toString() === userB._id.toString())).to.exist;
+            expect(_user.notifications.find(note => note._id.toString() === userB._id.toString() && note.notificationType === 'matched')).to.exist;
+            return User.findOne({ _id: userB._id });
+          })
+          .then((_user) => {
+            matchedId = _user.matched.find(matchedUser => matchedUser._id.toString() === user._id.toString()).chatroom;
+            expect(_user.popcorned).to.not.include(user._id);
+            expect(_user.matched.find(matchedUser => matchedUser._id.toString() === user._id.toString())).to.exist;
+            expect(_user.notifications.find(note => note._id.toString() === user._id.toString() && note.notificationType === 'matched')).to.exist;
           });
       });
     });

@@ -26,6 +26,11 @@ router.put('/time/:id', (req, res, next) => {
 router.get('/:id', (req, res, next) => {
   let { id } = req.params;
 
+  if (req.user.id !== id) {
+    let err = new Error('Hold up sir that is not your id');
+    err.status = 401;
+    next(err);
+  }
 
   User.findOne({ _id: id }, { notifications: 1, notificationCheck: 1 })
     .populate({ path: 'notifications._id', select: 'username' })

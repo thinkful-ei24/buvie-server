@@ -85,7 +85,7 @@ describe('Popcorn Endpoint', function () {
     return mongoose.connection.db.dropDatabase();
   });
 
-  describe.only('/api/main/popcorn', function () {
+  describe('/api/main/popcorn', function () {
     describe('GET api/main/popcorn', function () {
 
       it('Should reject requests with no credentials', function () {

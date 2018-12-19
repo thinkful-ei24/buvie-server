@@ -10,6 +10,12 @@ const jsonParser = bodyParser.json();
 router.get('/:id', (req, res, next) => {
   let { id } = req.params;
 
+  if (req.user.id !== id) {
+    let err = new Error('Hold up sir that is not your id');
+    err.status = 401;
+    return next(err);
+  }
+
   User.findOne({ _id: id }, { profilePicture: 1 })
     .then(user => {
       res.json(user);
@@ -35,7 +41,8 @@ router.post('/:id', jsonParser, (req, res, next) => {
     { new: true }
   )
     .then(user => {
-      res.status(201).json(user);
+      const { _id, username, profilePicture } = user;
+      res.status(201).json({ _id, username, profilePicture });
     })
     .catch(err => console.log(err));
 });

@@ -102,7 +102,17 @@ router.get('/', (req, res, next) => {
       }
 
       let sortedObj = ourMatches.sort((user1, user2) => {
-        return user2.count - user1.count;
+        if (user1.count > user2.count) {
+          return -1;
+        } else if (user1.count < user2.count) {
+          return 1;
+        }
+        if (user1.id < user2.id) {
+          return -1;
+        } else if (user1.id > user2.id) {
+          return 1;
+        }
+        return 0;
       });
 
       sortedIds = sortedObj.map(obj => obj.id);

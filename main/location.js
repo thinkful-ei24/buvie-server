@@ -25,9 +25,9 @@ router.get('/', (req, res, next) => {
 router.put('/:id', jsonParser, (req, res, next) => {
   const { id } = req.params;
   const { city, coordinates } = req.body;
-
+  console.log('usered', req.body);
   if (req.user.id !== id) {
-    let err = new Error('Woah woah woah, no way baby. That ain\'t yours');
+    let err = new Error('Provided id does not match current user\'s id');
     err.status = 401;
     next(err);
   }

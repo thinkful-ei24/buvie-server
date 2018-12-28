@@ -54,4 +54,11 @@ router.get('/google/redirect', passport.authenticate('google'), (req, res) => {
   res.redirect(`${config.CLIENT_ORIGIN}?authToken=${authToken}`);
 });
 
+router.post('/demo', (req, res) => {
+  User.findOne({ username: 'demouser' })
+    .then(user => {
+      const authToken = createAuthToken(user.serialize());
+      return res.json({ authToken });
+    });
+});
 module.exports = { router };
